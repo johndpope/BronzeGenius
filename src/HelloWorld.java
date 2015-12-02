@@ -58,8 +58,7 @@ public class HelloWorld {
 
 
 		// diff
-		// diff1
-		// diff2
+		// diff1 --
 
 		boolean flag = false;
 		System.out.println("flag: " + flag);
