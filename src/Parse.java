@@ -42,10 +42,10 @@ public class Parse
 		{
 			return cache.get(wordStart).clone();
 		}
-		
+
 		String currentWord = sentence.substring(wordStart, wordEnd + 1);
-		boolean validPartial = Parse.dictionary.contains(currentWord, false);
-		boolean validExact = validPartial && Parse.dictionary.contains(currentWord, true);
+		boolean validPartial = Parse.dictionary.contains(currentWord); //(currentWord, false);
+		boolean validExact = validPartial && Parse.dictionary.contains(currentWord); //(currentWord, true);
 		
 		/* break current word */
 		Parse bestExact = Parse.parse(sentence, wordEnd + 1, wordEnd + 1, cache);
