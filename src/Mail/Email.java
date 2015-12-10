@@ -23,9 +23,13 @@ public class Email {
                 d_port  = "465",
                 m_to = "xuch@amazon.com",
                 m_subject = "This is from JavaMail Test! ",// + params[0].getName(),
-                m_text = "This message is from Indoor Positioning App. Required file(s) are attached.";
+                m_text = "To whom maybe concerned,<br>" +
+                        "This is from Amazon Auto-Email Notifying System.<br>" +
+                        "Please don't reply to this email.<br><br>" +
+                        "Best," +
+                        "Regards.";
         Properties props = new Properties();
-        props.put("mail.smtp.user", d_email);
+        props.put("mail.smtp.user", "xuch@amazon.com");
         props.put("mail.smtp.host", d_host);
         props.put("mail.smtp.port", d_port);
         props.put("mail.smtp.starttls.enable","true");
@@ -49,15 +53,15 @@ public class Email {
         MimeMessage msg = new MimeMessage(session);
         try {
             msg.setSubject(m_subject);
-            msg.setFrom(new InternetAddress(d_email));
-            msg.addRecipient(Message.RecipientType.TO, new InternetAddress(m_to));
+            msg.setFrom(new InternetAddress("xuch@amazon.com"));
+            //msg.addRecipient(Message.RecipientType.TO, new InternetAddress(m_to));
             //msg.addRecipient(Message.RecipientType.TO, InternetAddress.parse(m_to));
-            msg.addRecipients(Message.RecipientType.TO, new InternetAddress[]{new InternetAddress("lyroechan@gmail.com"), new InternetAddress(m_to),});
+            msg.addRecipients(Message.RecipientType.TO, new InternetAddress[]{new InternetAddress("lyroechan@gmail.com"), new InternetAddress(m_to)});//, new InternetAddress("shiwuzhu@amazon.com")});
             //msg.setText(m_text);
 
             // set the body text
             MimeBodyPart mimeBodyPart = new MimeBodyPart();
-            mimeBodyPart.setContent("<h1> <font color = red>" + m_text + "</h1> </font>", "text/html");
+            mimeBodyPart.setContent("<strong> <font color = blue>" + m_text + "</strong> </font>", "text/html");
             //mimeBodyPart.setText(m_text);
             //mimeBodyPart.setHeader("Content-Type", "test/html; charset= \"UTF-8\"");
 
@@ -65,7 +69,7 @@ public class Email {
             multipart.addBodyPart(mimeBodyPart);
 
             // add the attachments
-            String fileDir = new java.io.File(".").getCanonicalPath() + "\\src\\Mail\\", fileName = "EmailA.java";
+            String fileDir = new java.io.File(".").getCanonicalPath() + "\\src\\Mail\\", fileName = "ReadMe.txt";
             mimeBodyPart = new MimeBodyPart();
             DataSource source = new FileDataSource(fileDir + fileName);
             mimeBodyPart.setDataHandler(new DataHandler(source));
