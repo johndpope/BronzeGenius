@@ -26,7 +26,7 @@ public class Email {
                 m_text = "To whom maybe concerned,<br>" +
                         "This is from Amazon Auto-Email Notifying System.<br>" +
                         "Please don't reply to this email.<br><br>" +
-                        "Best," +
+                        "Best,<br>" +
                         "Regards.";
         Properties props = new Properties();
         props.put("mail.smtp.user", "xuch@amazon.com");

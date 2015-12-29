@@ -1,0 +1,190 @@
+package GEOLocation;
+
+import java.io.*;
+import java.net.*;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import org.json.*;
+/**
+ * Created by xuch on 2015/12/28.
+ */
+
+/*
+* Input：
+*   详细的address，至少有省、市、街道地址或建筑物地址
+*   校验参数完整性
+*
+* Output：
+*   1.校验返回status
+*   2.if status == 1，再校验count
+*   3.if count > 0，校验geocodes是否为空
+*   4.if !geocodes.empty()，校验geocodes[0]是否为空
+*   5.if !geocodes[0].empty()，校验geocodes[0][district]
+*   6.if geocodes[0][district] != ""，返回status=1&&distric字段
+*
+*   只要任一校验失败，返回status=0，
+*
+*
+*   API 返回编码：
+*   status = -1，参数不完整
+*   status = 0，参数完整，查询结果为空
+*   status = 1，参数完整，查询成功
+*
+*
+*
+*
+* */
+public class GEOLocation {
+    public static  void main(String[] args) {
+        StringBuilder sb = new StringBuilder();
+        System.out.println("string: " + sb.toString() + ", isEmpty(): " + sb.toString().isEmpty());
+        System.exit(0);
+        String test1 = "{\"status\":\"1\",\"info\":\"OK\",\"infocode\":\"10000\",\"count\":\"1\",\"geocodes\":[{\"formatted_address\":\"北京市朝阳区远洋国际中心A座\",\"province\":\"北京市\",\"citycode\":\"010\",\"city\":\"北京市\",\"district\":\"朝阳区\",\"township\":[],\"neighborhood\":{\"name\":[],\"type\":[]},\"building\":{\"name\":[],\"type\":[]},\"adcode\":\"110105\",\"street\":[],\"number\":[],\"location\":\"116.491226,39.914951\",\"level\":\"门牌号\"},{\"formatted_address\":\"北京市朝阳区远洋国际中心A座\",\"province\":\"北京市\",\"citycode\":\"010\",\"city\":\"北京市\",\"district\":\"朝阳区\",\"township\":[],\"neighborhood\":{\"name\":[],\"type\":[]},\"building\":{\"name\":[],\"type\":[]},\"adcode\":\"110105\",\"street\":[],\"number\":[],\"location\":\"116.491226,39.914951\",\"level\":\"门牌号\"}]}";
+        String test = "{\"status\":\"1\",\"info\":\"OK\",\"infocode\":\"10000\",\"count\":\"1\",\"geocodes\":[{\"formatted_address\":\"北京市朝阳区远洋国际中心A座\",\"province\":\"北京市\",\"citycode\":\"010\",\"city\":\"北京市\",\"district\":\"朝阳区\",\"township\":[],\"neighborhood\":{\"name\":[],\"type\":[]},\"building\":{\"name\":[],\"type\":[]},\"adcode\":\"110105\",\"street\":[],\"number\":[],\"location\":\"116.491226,39.914951\",\"level\":\"门牌号\"}]}";
+        JSONObject jsonObject = new JSONObject(test);
+        String key = "geocodes";
+        String result = "";
+        if (jsonObject.has(key)) result = ((JSONArray)jsonObject.get(key)).get(0).toString();
+        if (jsonObject.has("district")) System.out.println("district: " + jsonObject.get("district").toString());
+        if (jsonObject.has("status")) System.out.println("status: " + jsonObject.get("status").toString());
+        System.out.println(result);
+
+        //JSONArray jsonArray = jsonObject.get("geocodes").names();
+        String[] names = jsonObject.getNames(jsonObject);
+        for (String st : names) System.out.println(st);
+        try {
+            Enumeration keys = (Enumeration) jsonObject.keys();
+            while (keys.hasMoreElements()) System.out.println(keys.nextElement());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.exit(0);
+
+        String address = "北京市远洋国际中心A座";
+        String response = getResponse(address);
+
+
+        System.out.println(response);
+
+
+
+    }
+
+
+
+    public static HashMap<String, String> getGEOLocation(String address) {
+        String response = getResponse(address);
+        return extractResult(response);
+    }
+
+    private static String getResponse(String address) {
+        try {
+            URLConnection connection = urlConnectionInitialization(address);
+
+            // get the response
+            InputStream is = connection.getInputStream();
+            //InputStream error = ((HttpURLConnection) connection).getErrorStream();
+            // if the response code is -1, then something went wrong with connection and response handling the httpURLConnection.
+            // InputStream response = new URL(url).openStream(); // 不需要设置返回charset直接得到返回结果
+
+            // handle the response
+            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+            /*StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = rd.readLine()) != null) {
+                response.append(line);
+                response.append('\r');
+            }
+            rd.close();*/
+            String response = readAll(rd).trim();
+            rd.close();
+            ((HttpURLConnection) connection).disconnect();
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace();
+            //return null;
+        } finally {
+            //if (connection != null) {
+            //   ((HttpURLConnection)connection).disconnect();
+            //}
+            return "";
+        }
+    }
+
+    private static URLConnection urlConnectionInitialization(String address) throws IOException{
+        String url = getURL(address);
+        URLConnection connection = new URL(url).openConnection();
+        connection.setRequestProperty("Accept-Charset", GEOConfig.CHARSET);
+        connection.setDoOutput(true);
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"); // Do as if you're using Chrome 41 on Windows 7
+        // send the request
+        //DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+        //wr.writeBytes(query);
+        //wr.close();
+
+            /*try (OutputStream outputStream = connection.getOutputStream()) {
+                outputStream.write(query.getBytes(charset));
+            }*/
+
+        // get the response
+        //InputStream is = connection.getInputStream();
+        //InputStream error = ((HttpURLConnection) connection).getErrorStream();
+        return connection;
+    }
+
+    private static String getURL(String address) throws IOException{
+        String query = String.format(
+                "key=%s&address=%s&output=%s",
+                URLEncoder.encode(GEOConfig.KEY, GEOConfig.CHARSET),
+                URLEncoder.encode(address, GEOConfig.CHARSET),
+                URLEncoder.encode(GEOConfig.OUTPUT, GEOConfig.CHARSET)
+        );
+        return GEOConfig.URL + "?" + query;
+    }
+
+    private static String readAll(BufferedReader rd) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        /*int cp;
+        while ((cp = rd.read()) != -1) {
+            stringBuilder.append((char) cp);
+        }*/
+        String line;
+        while ((line = rd.readLine()) != null) {
+            stringBuilder.append(line);
+            //stringBuilder.append('\r');
+        }
+
+        //rd.close();
+
+        return stringBuilder.toString();
+    }
+
+    private static HashMap<String, String> extractResult(String response) {
+        HashMap<String, String> mp = new HashMap<String, String>();
+        JSONObject jsonObject = new JSONObject(response);
+        if (jsonObject.has("status") && jsonObject.has("info")) {
+            String status = jsonObject.get("status").toString().trim();
+            mp.put("status", status);
+            mp.put("info", jsonObject.get("info").toString().trim());
+            if (status == "1" && jsonObject.has("count") && Integer.parseInt(jsonObject.get("count").toString().trim()) > 0) {
+                String key = "geocodes";
+                if (jsonObject.has(key)) {
+                    JSONObject geo = new JSONObject(((JSONArray) jsonObject.get(key)).get(0).toString());
+                    String district = "district";
+                    if (geo.has(district) && !geo.get(district).toString().trim().isEmpty()) {
+                        mp.put("district", geo.get(district).toString().trim());
+                    }
+                }
+            }
+        } else {
+            mp.put("status", "-1");
+            mp.put("info", "GEO_API_CONNECTION_ERROR");
+        }
+        return mp;
+    }
+
+}

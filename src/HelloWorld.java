@@ -1,3 +1,5 @@
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
+
 import java.io.IOException;
 import java.lang.*;
 import java.util.*;
@@ -59,8 +61,92 @@ public class HelloWorld {
 		System.out.println("bit pattern: " + bbits);
 	}
 
-	public static void main(String[] args) {
+	public static void f() throws Exception {
+		System.out.println("originating the exception in f()");
+		throw new Exception("thrown from f()");
+	}
+
+	public static void g() throws Throwable {
+		try {
+			f();
+		} catch (Exception e) {
+			System.out.println("Inside g(), e.printStackTrace()");
+			e.printStackTrace();
+			//throw e;
+			throw e.fillInStackTrace(); // fillInStackTrace() returns a Throwable
+		}
+	}
+	public static void main(String[] args) throws Throwable {
 		// TODO Auto-generated method stub
+
+
+
+		String _str = "hello world!", _str1 = "你好！";
+		byte[] _str2 = _str.getBytes("utf-16be");
+		byte[] _str3 = _str1.getBytes("utf8");
+		System.out.println(String.valueOf(_str2));
+		System.out.println(String.valueOf(_str3));
+		exit();
+
+
+		int count = 0;
+		while (count < 10) {
+			try {
+				if (count++ == 0) throw new Exception();
+				System.out.println("No exception");
+			} catch (Exception e) {
+				System.out.println("Exception thrown");
+			} finally {
+				System.out.println("in finally clouse");
+				if (count == 3) break;
+			}
+		}
+		// 貌似finally在这里没有作用，因为无论有无finally，finally块里的语句都会被执行。但是在某些情况下会用到fanally，比如在有可能抛出很多种类异常的情况下，在抛出异常后需要进行一些恢复或者清理工作，不可能在每个catch块里去重复这种操作的代码，所以就可以用一个finally块解决问题。
+		System.out.println("count: " + count);
+		exit();
+
+		try {
+			g();
+		} catch (Exception e) {
+			System.out.println("Caught in main, e.printStackTrace()");
+			e.printStackTrace();
+			throw new NullPointerException("from main");
+		}
+		exit();
+
+
+
+		try {
+			throw new Exception("Here is my exception");
+		} catch (Exception e) {
+			System.out.println("Caught Exception");
+			System.out.println("e.getMessage(): " + e.getMessage());
+			System.out.println("e.toString(): " + e.toString());
+			System.out.println("e.printStackTrace(): ");
+			e.printStackTrace();
+		}
+		exit();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		int ii = 0;
 		prl(Integer.toString(ii));
 		exit();

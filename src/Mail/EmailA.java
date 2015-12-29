@@ -53,7 +53,7 @@ public class EmailA extends Object{
                     "To whom maybe concerned,<br>" +
                     "This is from Amazon Auto-Email Notifying System.<br>" +
                     "Please don't reply to this email.<br><br>" +
-                    "Best," +
+                    "Best,<br>" +
                     "Regards.";
             MimeBodyPart mimeBodyPart = new MimeBodyPart();
             mimeBodyPart.setContent("<strong> <font color = black>" + m_text + "</strong> </font>", "text/html");
