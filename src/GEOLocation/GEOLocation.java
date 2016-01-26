@@ -1,5 +1,6 @@
 package GEOLocation;
 
+import GEOLocation.geo.*;
 import java.io.*;
 import java.net.URL;
 import java.net.HttpURLConnection;
@@ -7,6 +8,8 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.*;
 import org.json.*;
+
+
 /**
  * Created by xuch on 2015/12/28.
  */
@@ -19,8 +22,8 @@ import org.json.*;
 *       其他参数同理
 *
 * Output：
-*   status = -1，API连接错误(API CONNECTION ERROR)：网络错误，GEO API访问限制（例如超过当日访问次数上限，禁止访问），API服务关闭等等
-*   status = 0，参数不合理：key过期，key不正确，address为空等等
+*   status = -1，API_CONNECTION_ERROR：网络错误，访问超时等。此种情况，建议重试。
+*   status = 0， 请求失败：参数不合理（key过期，key不正确，address为空），访问超限等等
 *   status = 1，参数完整，查询成功
 *       若district字段存在，则查询有结果
 *       若district字段不存在，则未查询到结果
@@ -29,85 +32,27 @@ import org.json.*;
 public class GEOLocation {
 
     public static HashMap<String, String> getGEOLocation(String address) {
-        String response = getResponse(address);
-        return extractResult(response);
-    }
-
-    private static String getResponse(String address) {
-        try {
-            URLConnection connection = urlConnectionInitialization(address);
-            InputStream is = connection.getInputStream();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-            String response = readAll(rd).trim();
-            rd.close();
-            ((HttpURLConnection)connection).disconnect();
-            return response;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "";
+        GEOAli ali = new GEOAli();
+        HashMap<String, String> result = ali.getGEO(address);
+        if (!result.containsKey("district")) {
+            GEOBaidu baidu = new GEOBaidu();
+            result = baidu.getGEO(address);
         }
+        return result;
     }
 
-    private static URLConnection urlConnectionInitialization(String address) throws IOException{
-        String url = getURL(address);
-        URLConnection connection = new URL(url).openConnection();
-        connection.setRequestProperty("Accept-Charset", GEOConfig.CHARSET);
-        connection.setDoOutput(true);
-        connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"); // Do as if you're using Chrome 41 on Windows 7
-
-        return connection;
+    public static HashMap<String, String> ali(String address) {
+        GEOAli ali = new GEOAli();
+        return ali.getGEO(address);
     }
 
-    private static String getURL(String address) throws IOException{
-        String query = String.format(
-                "key=%s&address=%s&output=%s",
-                URLEncoder.encode(GEOConfig.KEY, GEOConfig.CHARSET),
-                URLEncoder.encode(address, GEOConfig.CHARSET),
-                URLEncoder.encode(GEOConfig.OUTPUT, GEOConfig.CHARSET)
-        );
-        return GEOConfig.URL + "?" + query;
+    public static HashMap<String, String> baidu(String address) {
+        GEOBaidu baidu = new GEOBaidu();
+        return baidu.geo(address);
     }
 
-    private static String readAll(BufferedReader rd) throws IOException {
-        StringBuilder stringBuilder = new StringBuilder();
-        String line;
-        while ((line = rd.readLine()) != null) {
-            stringBuilder.append(line);//stringBuilder.append('\r');
-        }
-        return stringBuilder.toString();
+    public static HashMap<String, String> baidu_(String location) {
+        GEOBaidu baidu = new GEOBaidu();
+        return baidu.geoReverse(location);
     }
-
-    private static HashMap<String, String> extractResult(String response) {
-        HashMap<String, String> mp = new HashMap<>();
-        JSONObject jsonObject = new JSONObject(response);
-        if (jsonObject.has("status") && jsonObject.has("info")) {
-            String status = jsonObject.get("status").toString().trim();
-            mp.put("status", status);
-            mp.put("info", jsonObject.get("info").toString().trim());
-            if (status.equals("1") && jsonObject.has("count") && Integer.parseInt(jsonObject.get("count").toString().trim()) > 0) {
-                String key = "geocodes";
-                if (jsonObject.has(key)) {
-                    JSONObject geo = new JSONObject(((JSONArray) jsonObject.get(key)).get(0).toString());
-                    if (geo.has("district") && !geo.get("district").toString().trim().isEmpty() && geo.has("city") && !geo.get("city").toString().trim().isEmpty() && geo.has("province") && !geo.get("province").toString().trim().isEmpty()) {
-                        /*
-                        * get more info:
-                        * {province, city, district}
-                        *
-                        *then call the function GEOMap.getAmazonMappedLocation(province, city, district)
-                        * */
-                        String district = geo.get("district").toString().trim();
-                        String city = geo.get("city").toString().trim();
-                        String province = geo.get("province").toString().trim();
-                        mp.put("district", GEOMap.getAmazonMappedDistrict(province, city, district));
-                    }
-                }
-            }
-            //else if (status.equals("1")) mp.put
-        } else {
-            mp.put("status", "-1");
-            mp.put("info", "GEO_API_CONNECTION_ERROR");
-        }
-        return mp;
-    }
-
 }

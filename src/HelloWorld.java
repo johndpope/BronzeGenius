@@ -1,7 +1,4 @@
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
-
 import java.io.IOException;
-import java.lang.*;
 import java.util.*;
 
 
@@ -76,9 +73,43 @@ public class HelloWorld {
 			throw e.fillInStackTrace(); // fillInStackTrace() returns a Throwable
 		}
 	}
+
+	public static HashMap<String, String> testNonInitializationObject(boolean flag) {
+		HashMap<String, String> map = new HashMap<>();
+		if (flag)
+		{
+			map.put("hello", "world");
+		}
+
+		return map;
+	}
+
 	public static void main(String[] args) throws Throwable {
 		// TODO Auto-generated method stub
 
+		/*
+		* map.get(key) return null if key not exist, do not throw exception
+		*
+		*
+		* */
+		try
+		{
+
+			System.out.println(Integer.parseInt("000000048"));
+			System.exit(0);
+			HashMap<String, String> result = testNonInitializationObject(true);
+			System.out.println("result is " + (result.isEmpty() ? "empty" : "not empty"));
+			for (Map.Entry e : result.entrySet())
+			{
+				System.out.println(e.getKey() + "=" + e.getValue());
+			}
+			System.out.println("as=" + result.get("as"));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		System.exit(0);
 
 
 		String _str = "hello world!", _str1 = "你好！";
