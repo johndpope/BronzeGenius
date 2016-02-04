@@ -24,3 +24,10 @@ spark-env.sh上指定SPARK_MASTER_IP并不会新开一个服务
 11. 在哪个结点启动服务，那么就只认定当前节点的配置文件。所以任何结点如果要设置SPARK_MASTER_IP，都必须和本结点一致。
 12. wwebUI例如浏览器只能访问本机的node启动的服务，不能访问同一个cluster的其他结点的slaves或者master
 
+13. start-all = start-master + start-slaves
+    master为单数，说明只能有一个master，slaves为复数，说明可有多个slaves。
+    start-master启动本结点为master
+    start-slaves启动conf/slaves中所有的结点为slaves，即使已经包括了作为master的当前节点，仍然会新启一个进程作为slave
+    所以，start-master仅仅启动当前节点作为master
+    start-slaves启动conf/slaves中的所有结点作为slaves，不会启动master
+
