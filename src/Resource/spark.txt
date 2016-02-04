@@ -1,0 +1,26 @@
+Spark-Hadoop
+
+1. http://cn.soulmachine.me/blog/20140130/
+2. Spark-hadoop cluster由一系列spark-hadoop结点组成，每个节点部署在单独的机器上
+3. 无论在任何spark-hadoop结点启动本结点或者start-all，都将当前所在结点作为master
+4. 读取conf/slaves配置文件，所有conf/slaves中的结点都认为是slaves结点，localhost即表示本结点
+5. 如果发现conf/spark-env.sh中设置了SPARK_MASTER_IP，而且与当前节点不一致，且在当前节点启动服务，就会报错，因为不允许同时有多个master
+6. 所以一定要注意SPARK_MASTER_IP设置不能与当前节点冲突。
+7. 当前节点执行start-all时，会将自己作为master，同时启动conf/slaves中的所有slaves结点。所以对于由A、B、C组成的cluster，他们的配置应该分别是：
+A：conf/slaves = {B, C}
+B：conf/slaves = {A, C}
+C：conf/slaves = {B, C}
+一个spark-hadoop结点可以开启多个进程，其中一个为master，其余的为slaves
+A：conf/slaves = {A, B, C} 在A上开启，会在A上启动两个进程，一个默认的port为master，其余的A和B、C为slaves
+B：conf/slaves = {A, B, C} 同上
+C：conf/slaves = {A, B, C} 同上
+spark-env.sh上指定SPARK_MASTER_IP并不会新开一个服务
+因为如果当前节点已经启动，则不会重复启动。后者有助于在任何结点都能一目了然的知道所有cluster的结点。
+8. 注意，所有cluster的结点必须部署在相同的路径下，而且JAVA_HOME也必须有相同的路径，否则就必须在每个节点的spark-env.sh中显示的export 当前的JAVA_HOME
+9. 另外，JDK版本必须是1.6+，否则会报错。
+
+
+10. 最好的方式应该是在每个slave节点上配置上相同的SPARK_MASTER_IP，而且如果要执行start-all必须在master节点上执行，这样本结点ip就会和设置的SPARK_MASTER_IP一致。否则，在任何其他结点上start-all都会默认当前结点为master，会冲突。
+11. 在哪个结点启动服务，那么就只认定当前节点的配置文件。所以任何结点如果要设置SPARK_MASTER_IP，都必须和本结点一致。
+12. wwebUI例如浏览器只能访问本机的node启动的服务，不能访问同一个cluster的其他结点的slaves或者master
+
