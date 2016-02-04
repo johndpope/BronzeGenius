@@ -1,0 +1,6 @@
+synchronized 非静态：方法名/代码片段
+1. synchronized 锁住的是this对象，不是方法或者代码段
+同一对象一旦执行synchronized代码或方法，就必须执行完了才能执行其他
+synchronized 静态：方法名/代码片段
+1. synchronized 锁住的是Class，不是类的对象、方法或者代码段
+http://blog.csdn.net/xiao__gui/article/details/8188833

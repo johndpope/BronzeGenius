@@ -336,3 +336,37 @@ class MyThread extends Thread
         sync.sync(this.i);
     }
 }
+
+//
+/**
+ * 想要让同一个Instance能够同时执行多个synchronized methods。可以在类定义中创建几个新锁进行绑定，即每个method绑定一个独立的object，看如下例子：
+ *
+ * 1. 同一个Instance可以在多个thread里同时执行inc1() 和 inc2()
+ * 2. 同一个Instance不能并行执行多个inc1()，因为同一个Instance拥有同一个lock1
+ * 3. 同一个Instance不能并行执行多个inc2()，因为同一个Instance拥有同一个lock2
+ *
+ *
+ */
+class MsLunch
+{
+    private long c1 = 0;
+    private long c2 = 0;
+    private Object lock1 = new Object();
+    private Object lock2 = new Object();
+
+    public void inc1()
+    {
+        synchronized (lock1)
+        {
+            c1++;
+        }
+    }
+
+    public void inc2()
+    {
+        synchronized (lock2)
+        {
+            c1++;
+        }
+    }
+}
