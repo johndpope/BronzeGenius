@@ -31,3 +31,5 @@ spark-env.sh上指定SPARK_MASTER_IP并不会新开一个服务
     所以，start-master仅仅启动当前节点作为master
     start-slaves启动conf/slaves中的所有结点作为slaves，不会启动master
 
+14. Since the Master daemon is managed by the Warden daemon, do not use the start-all.sh or stop-all.sh command.
+
