@@ -1,6 +1,7 @@
 Spark-Hadoop
 
 1. http://cn.soulmachine.me/blog/20140130/
+   https://cwiki.apache.org/confluence/display/SPARK/Useful+Developer+Tools#UsefulDeveloperTools-IDESetup
 2. Spark-hadoop cluster由一系列spark-hadoop结点组成，每个节点部署在单独的机器上
 3. 无论在任何spark-hadoop结点启动本结点或者start-all，都将当前所在结点作为master
 4. 读取conf/slaves配置文件，所有conf/slaves中的结点都认为是slaves结点，localhost即表示本结点
