@@ -10,11 +10,11 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.Properties;
 
-
 /**
- * Created by xuch on 2015/12/7.
+ * Created by xuch on 2016/2/18.
  */
-public class Email {
+public class EmailDemo
+{
     public static void main(String[] args) {
 
         String  d_email = "",
@@ -24,11 +24,7 @@ public class Email {
                 d_port  = "465",
                 m_to = "xuch@amazon.com",
                 m_subject = "This is from JavaMail Test! ",// + params[0].getName(),
-                m_text = "To whom maybe concerned,<br>" +
-                        "This is from Amazon Auto-Email Notifying System.<br>" +
-                        "Please don't reply to this email.<br><br>" +
-                        "Best,<br>" +
-                        "Regards.";
+                m_text = "Hello World!";
         Properties props = new Properties();
         props.put("mail.smtp.user", "xuch@amazon.com");
         props.put("mail.smtp.host", d_host);
@@ -62,8 +58,7 @@ public class Email {
 
             // set the body text
             MimeBodyPart mimeBodyPart = new MimeBodyPart();
-            mimeBodyPart.setContent("<strong> <font color = blue>" + m_text + "</strong> </font>", "text/html");
-            //mimeBodyPart.setText(m_text);
+            mimeBodyPart.setText(m_text);
             //mimeBodyPart.setHeader("Content-Type", "test/html; charset= \"UTF-8\"");
 
             Multipart multipart = new MimeMultipart();
@@ -145,3 +140,5 @@ public class Email {
     您的用戶端密鑰如下:
     _wpBfsQenQmVZmlBJHss_L-x
  */
+
+

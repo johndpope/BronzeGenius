@@ -79,7 +79,6 @@ public abstract class GEO implements GEOInterface
         {
             e.printStackTrace();
         }
-        System.out.println("response from " + this.getClass() + ": " + response);
         return extractResult(response);
     }
 

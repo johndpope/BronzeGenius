@@ -36,7 +36,7 @@ public abstract class GEOMap implements GEOMapInterface
     {
         String path = getPath();
         java.io.File file = new java.io.File(path);
-        System.out.println(file.getAbsolutePath());
+        //System.out.println(file.getAbsolutePath());
         //System.out.println(System.getProperty("user.dir"));
         if ( !file.exists() ) throw new FileNotFoundException("Excel File can not be found!");
         return file;

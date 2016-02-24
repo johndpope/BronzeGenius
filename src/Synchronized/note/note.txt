@@ -4,3 +4,21 @@ synchronized 非静态：方法名/代码片段
 synchronized 静态：方法名/代码片段
 1. synchronized 锁住的是Class，不是类的对象、方法或者代码段
 http://blog.csdn.net/xiao__gui/article/details/8188833
+
+a thread will be thrown into a runnable pool when executing thread.start
+then the OS will decide which one to run at the first time.
+actually the running sequence does not depends on the sequence of executing thread.start, it depends on the sequence of OS running threads.
+Generally it is unpredictable to run the threads by OS after thread.runnable().
+
+
+
+only when Class or Instance finishes executing one synchronized method, then the Class or Instance can execute another synchronized method.
+如果一个类有多个不同的synchronized methods，那么当前Class或者Instance在执行其中一个synchronized method时，不能去并行执行其他synchronized method。
+即，同一个Class中的synchronized static methods/snippet是共享同一个Class lock的，只要当前Class处于locked状态，就不能再去并行执行任何当前thread或者其他threads的同一Instance的synchronized static methods/sinppet
+同一个Instance中的synchronized methods/snippet是共享同一个Instance lock的，只要当前Instance处于locked状态，就不能再去执行任何thread的任何synchronized method/snippet（无论是否是同一method），但是不影响同时执行non-synchronized method或snippet
+【PS】Class lock 和 Instance lock是两个独立的lock，互不影响。但要注意的是，一个Instance也是属于这个Class，所以任一个Instance调用synchronized static method时，这个Class处于locked状态，任何其他synchronized static method/snippet 都不能再同时执行。
+【PS】Class/Instance所拥有的synchronized method一定在自己的类定义中，但是synchronized snippet经常在自己的类定义外。
+【PS】共享同一个lock的method/snippet必须永远避免相互调用的局面。否则会引起deadlock死锁。
+【PS】永远不要在Class自己的一个synchronized method/snippet中调用自己的另一个synchronized method/snippet。因为他们是共用同一个lock，这会造成死锁deadlock
+【PS】要十分谨慎，当在Class自己的一个synchronized method/snippet中调用另一个Class的synchronized method/snippet。因为这也可能会造成死锁deadlock
+由于一个Instance只能同时执行一个其所拥有的synchronized method，当synchronized method中调用另一个synchronized method/snippet时，有可能会引起死锁deadlock。请看如下例子：

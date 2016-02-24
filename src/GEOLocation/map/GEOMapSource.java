@@ -88,7 +88,7 @@ public abstract class GEOMapSource extends GEOMap
     * */
     public HashMap<String, String> getMappedGEO(String province, String city, String district)
     {
-        String key = getKey(province, city, district);System.out.println("key in amazon:" + key);
+        String key = getKey(province, city, district);
         if ( key != null && !key.isEmpty() ) return getMappedGEOByKey(key);
         return null;
     }

@@ -3,14 +3,13 @@ package Mail;
 /**
  * Created by xuch on 2015/12/7.
  */
-import java.util.Date;
-import java.util.Properties;
-
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import java.util.Date;
+import java.util.Properties;
 
 
 public class EmailA extends Object{
@@ -33,7 +32,7 @@ public class EmailA extends Object{
             Session mailSession = Session.getInstance(props, new javax.mail.Authenticator() {
 
                 protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication("xuch@amazon.com", "LyroeChan@2345");
+                    return new PasswordAuthentication("email_address", "password");
                 }
             });
 

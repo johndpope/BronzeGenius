@@ -17,7 +17,7 @@ C：conf/slaves = {A, B, C} 同上
 spark-env.sh上指定SPARK_MASTER_IP并不会新开一个服务
 因为如果当前节点已经启动，则不会重复启动。后者有助于在任何结点都能一目了然的知道所有cluster的结点。
 8. 注意，所有cluster的结点必须部署在相同的路径下，而且JAVA_HOME也必须有相同的路径，否则就必须在每个节点的spark-env.sh中显示的export 当前的JAVA_HOME
-9. 另外，JDK版本必须是1.6+，否则会报错。
+9. 另外，JDK版本必须是1.6+，否则会报错。 \
 
 
 10. 最好的方式应该是在每个slave节点上配置上相同的SPARK_MASTER_IP，而且如果要执行start-all必须在master节点上执行，这样本结点ip就会和设置的SPARK_MASTER_IP一致。否则，在任何其他结点上start-all都会默认当前结点为master，会冲突。

@@ -1,6 +1,5 @@
 package UnitTest;
 
-import GEOLocation.GEOLocation;
 import GEOLocation.Tool;
 import GEOLocation.config.GEOConfig;
 import GEOLocation.config.GEOConfigAli;
@@ -53,7 +52,7 @@ public class UnitTest {
     }
 
 
-    private static void test_1() {
+    /*private static void test_1() {
 
         ArrayList<String> addresses = new ArrayList<>(Arrays.asList("北京市朝阳区远洋国际中心A座", "远洋国际中心A座", "中国银行大厦", "", "fuck you", "---23dsf@@E$", "安徽合肥市蜀山区经开区书香路71号报业园24号楼712", "贵州贵阳市南明区东山中天世纪新城半山居A1栋3单元201室")); //{"北京市朝阳区远洋国际中心A座", };
         for (String address : addresses) {
@@ -68,7 +67,7 @@ public class UnitTest {
             System.out.print("\n");
         }
         return;
-    }
+    }*/
 
     private static void test_2() {
         //GEOMap.getFile();
@@ -78,7 +77,7 @@ public class UnitTest {
         //GEOMap.readFile();
     }
 
-    private static void test_4() {
+    /*private static void test_4() {
         ArrayList<String> addresses = new ArrayList<>(Arrays.asList("北京市朝阳区远洋国际中心A座"));
         ArrayList<String> addresses_ = new ArrayList<>(Arrays.asList("北京市朝阳区远洋国际中心A座", "远洋国际中心A座", "中国银行大厦", "", "fuck you", "---23dsf@@E$", "安徽合肥市蜀山区经开区书香路71号报业园24号楼712", "贵州贵阳市南明区东山中天世纪新城半山居A1栋3单元201室")); //{"北京市朝阳区远洋国际中心A座", };
         for (String address : addresses_) {
@@ -93,9 +92,9 @@ public class UnitTest {
             System.out.print("\n");
         }
         return;
-    }
+    }*/
 
-    private static void test_5() {
+    /*private static void test_5() {
         ArrayList<String> addresses = new ArrayList<>(Arrays.asList("北京市朝阳区远洋国际中心A座"));
         ArrayList<String> addresses_ = new ArrayList<>(Arrays.asList("北京市朝阳区远洋国际中心A座", "远洋国际中心A座", "中国银行大厦", "", "fuck you", "---23dsf@@E$", "安徽合肥市蜀山区经开区书香路71号报业园24号楼712", "贵州贵阳市南明区东山中天世纪新城半山居A1栋3单元201室")); //{"北京市朝阳区远洋国际中心A座", };
         for (String address : addresses_) {
@@ -123,7 +122,7 @@ public class UnitTest {
             }
         }
         return;
-    }
+    }*/
 
 
     private static void test_6()
