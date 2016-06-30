@@ -1,3 +1,5 @@
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -84,9 +86,36 @@ public class HelloWorld {
 		return map;
 	}
 
+	public static boolean isValidCode(String code)
+	{
+		return code != null && !code.isEmpty() && code.matches("^[a-zA-Z0-9]*$");
+	}
 	public static void main(String[] args) throws Throwable {
 		// TODO Auto-generated method stub
+		String[] orderCodes = {"PEKPEK20160321000417", "", "adsgdaf", "1234", "ASFWFWDDS", "@#$%SD!@EXDE134"};
+		for (String orderCode : orderCodes)
+		{
+			System.out.println(orderCode + " is " + (isValidCode(orderCode) ? "valid" : "invalid"));
+		}
 
+
+
+
+		System.out.println("hello world");
+		List<Object> list = new ArrayList<>();
+		List<Object> list1 = new LinkedList<>();
+		list.add("1234");
+		list.add(null);
+		list1.add(1);
+		list1.add(null);
+		System.out.println("list size: " + list.size() + ". list1 size: " + list1.size());
+		Map<String, Object> mp = new HashMap<>();
+		Map<String, Object> mp1 = new HashMap<>();
+		mp.put("a", "string object");
+		mp.put("b", new HashMap<String, Object>(){{put("inside", "string object");}});
+		JSONObject jsonObject = new JSONObject(mp);
+		System.out.println(jsonObject);
+		exit();
 		/*
 		* map.get(key) return null if key not exist, do not throw exception
 		*
