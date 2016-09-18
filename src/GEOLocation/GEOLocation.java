@@ -22,7 +22,7 @@ import java.util.Map;
 *
 * Output：
 *   status = -1，API_CONNECTION_ERROR：网络错误，访问超时等。此种情况，建议重试。
-*   status = 0， 请求失败：参数不合理（key过期，key不正确，address为空），访问超限等等
+*   status = 0， 请求失败：参数不合理（key过期，key不正确，address为空或有非法字符），访问超限等等
 *   status = 1，参数完整，查询成功
 *       若district字段存在，则查询有结果
 *       若district字段不存在，则未查询到结果

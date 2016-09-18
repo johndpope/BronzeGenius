@@ -308,7 +308,7 @@ public class Sync
 
 /*
 *
-* only when Class or Instance finishes executing one synchronized method, then the Class or Instance can execute another synchronized method.
+* only when Class or Instance finishes executing one synchronized method, then the Class or Instance can Selection another synchronized method.
 * 如果一个类有多个不同的synchronized methods，那么当前Class或者Instance在执行其中一个synchronized method时，不能去并行执行其他synchronized method。
 * 即，同一个Class中的synchronized static methods/snippet是共享同一个Class lock的，只要当前Class处于locked状态，就不能再去并行执行任何当前thread或者其他threads的同一Instance的synchronized static methods/sinppet
 * 同一个Instance中的synchronized methods/snippet是共享同一个Instance lock的，只要当前Instance处于locked状态，就不能再去执行任何thread的任何synchronized method/snippet（无论是否是同一method），但是不影响同时执行non-synchronized method或snippet

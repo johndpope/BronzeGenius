@@ -92,6 +92,14 @@ public class HelloWorld {
 	}
 	public static void main(String[] args) throws Throwable {
 		// TODO Auto-generated method stub
+		Map<String, String> nm = null;//new HashMap<>();
+		//nm.put("1", "A");
+		Map<String, String> nm1 = new HashMap<>(nm);
+		nm1.put("1", "a");
+		System.out.println(nm.size() + ", " + nm1.size());
+		System.out.println(nm.get("1") + ", " + nm1.get("1"));
+		System.exit(1);
+
 		String[] orderCodes = {"PEKPEK20160321000417", "", "adsgdaf", "1234", "ASFWFWDDS", "@#$%SD!@EXDE134"};
 		for (String orderCode : orderCodes)
 		{

@@ -2,10 +2,17 @@
  * Created by xuch on 2015/12/15.
  */
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 //import com.bruceeckel.tools.*;
 
 public class IOStreamDemo {
     public static void main(String[] args) {
+        Map<String, String> mp = new HashMap<>();
+        mp.put("1", "hello");
+        Map<String, String> map = mp;
+        System.out.println(map.get("1"));
+
         /*try {
             // 1. Buffered input file
             DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(args[0])));
