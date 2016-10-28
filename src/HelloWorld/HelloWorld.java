@@ -16,6 +16,39 @@ public class HelloWorld
 {
     public static void main(String[] args) throws Exception
     {
+        Date date = null;
+        if (date == null) {
+            //throw new FromRuntimeException("from runtime exception");
+        }
+        //System.out.println(date.toString());
+        double a = 1232131241.000034324;
+        double b = 9258334.45352467801;
+        System.out.println(String.format("hahah%f,sss%fss,", a, b));
+        Date eventTime = null;
+        String shipmentId = "1111111", eventCode = "WMM", nullStr = null;
+        System.out.println(nullStr + null);
+        System.out.println(String.format(
+                "There are more than one item with the same combination of [shpmentId: %s, eventCode: %s], " +
+                        "when querying ShipmentTimerMapping dynamoDB table.",
+                shipmentId, eventCode));
+        try {
+            throw new IllegalArgumentException(String.format(
+                    "There are more than one item with the same combination of [shpmentId: %s, eventCode: %s], " +
+                            "when querying ShipmentTimerMapping dynamoDB table.",
+                    shipmentId, eventTime));
+        } catch (IllegalArgumentException e) {
+            System.out.println("captures an IllegalArgumentException");
+            throw new IllegalStateException("thrown from first catch");
+        } catch (Exception e) {
+            System.out.println("captures an Exception " + e.getMessage());
+            e.printStackTrace();
+        }
+        System.out.println(Long.parseLong("1476849329196"));
+        Date now =  new Date();
+        System.out.println(now.toString() + "|" + now.getTime());
+
+        System.exit(1);
+
         try{throwException();}
         catch (Exception e)
         {

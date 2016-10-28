@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definition assembly="com.amazon.psr.model" version="1.0">
+
+	<!-- Purchase Shipping -->
+
+	<documentation target="PurchaseShipping">
+		Returns the set of shipment and
+		tracking ids for a given set of Transporatation Requests. If the
+		purchase results in
+		few shipments not being created, then those
+		shipments are returned as
+		errorShipments. If the client reference ids
+		are not provided, then by
+		default values of 1,2,3.. etc will be
+		inserted.
+		The Purchase Shipping
+		call is currently used only for
+		Transportation
+		Requests. However, this
+		call will also be used
+		to purchase
+		other services offered by Amazon
+		Logistics.
+		The reason it has been
+		modelled as errorShipments and not through
+		exceptions is because we
+		want to allow partial success orders as well.
+		The error shipments are
+		returned as part of the response along with
+		the error codes. However,
+		the current set of error codes are not
+		defined as it is not returned by
+		TSS as to the reason for failure.
+	</documentation>
+	<operation name="PurchaseShipping">
+		<input target="PurchaseShippingRequest" />
+		<output target="PurchaseShippingResponse" />
+		<error target="InvalidInputException" />
+		<error target="DependencyException" />
+		<error target="PSRException" />
+		<error target="TokenAlreadyExistsException" />
+	</operation>
+
+	<structure name="PurchaseShippingRequest">
+		<member name="requestHeader"
+			target="com.amazon.transportation.tss.model#RequestHeader" />
+		<member name="requestor" target="Requestor" />
+		<member name="clientPurchaseReferenceId" target="ReferenceIdentifier" />
+		<member name="shippingDocuments"
+			target="com.amazon.transportation.tss.model#ShippingDocumentsList" />
+		<member name="shippingRequests" target="ShippingRequestList" />
+		<member name="inputChannel" target="ChannelType" />
+	</structure>
+	<required target="PurchaseShippingRequest$requestHeader" />
+	<required target="PurchaseShippingRequest$requestor" />
+	<required target="PurchaseShippingRequest$shippingRequests" />
+
+	<structure name="PurchaseShippingResponse">
+		<member name="purchase" target="Purchase" />
+		<member name="errorShipments" target="ErrorShipmentList" />
+		<member name="shipments" target="ShipmentList" />
+
+		<member name="shippingServiceCharge"
+			target="com.amazon.transportation.tss.model#ShippingServiceCharge" />
+
+	</structure>
+
+
+	<!-- Cancel Purchase -->
+
+	<documentation target="CancelPurchase">
+        Cancels the shipment related to the identifier provided. Identifiers can be any of shipment id, purchase id,
+        tracking id or container id. In addition, we expect clientMarketplaceId to be passed as downstream systems might
+        be country-specific requiring the ability to decide which region to be called.
+    </documentation>
+	<operation name="CancelPurchase">
+		<input target="CancelPurchaseRequest" />
+		<output target="CancelPurchaseResponse" />
+		<error target="InvalidInputException" />
+		<error target="DependencyException" />
+		<error target="PSRException" />
+	</operation>
+
+	<structure name="CancelPurchaseRequest">
+		<member name="requester" target="com.amazon.cct.model#OperationRequester" />
+		<member name="purchaseId" target="PurchaseId" />
+		<member name="shipmentIds" target="ShipmentIdList" />
+		<member name="trackingId" target="TrackingId" />
+		<member name="containerId" target="ContainerId" />
+		<member name="clientMarketplaceId" target="String" />
+		<member name="cctMarketplaceId" target="String" />
+		
+	</structure>
+	<structure name="CancelPurchaseResponse">
+		<member name="status" target="PurchaseStatus" />
+		<member name="cancelledShipments" target="CancelShipmentResponseList" />
+	</structure>
+
+	<documentation target="UpdateContainerStatusInfo">
+		Handles the events fetched from SQS
+		queue and triggers the update status on the container level for MPS
+		support.Retreives a container with updated status.
+	</documentation>
+	<operation name="UpdateContainerStatusInfo">
+		<input target="UpdateContainerStatusInfoRequest" />
+		<output target="UpdateContainerStatusInfoResponse" />
+		<error target="DependencyException" />
+		<error target="InvalidInputException" />
+	</operation>
+
+	<documentation target="UpdateContainerStatusInfoRequest">
+		It is the request structure for the
+		UpdateShipmentStatusContainerInfo. It basically accepts the PSREvent
+		in the request
+	</documentation>
+
+	<structure name="UpdateContainerStatusInfoRequest">
+		<member name="Event" target="PSREvent" />
+	</structure>
+
+	<documentation target="UpdateContainerStatusInfoResponse">
+		It is the response generated for
+		UpdateShipmentContainerStatusInfo Call. It returns the container with
+		the updated response.
+	</documentation>
+	<structure name="UpdateContainerStatusInfoResponse">
+		<member name="container" target="Container" />
+	</structure>
+
+	<documentation target="SignCommercialCarrierContract">
+		Operation implementing CASE sign
+		plugin for PSRService
+	</documentation>
+	<operation name="SignCommercialCarrierContract">
+		<input target="SignCommercialCarrierContractInput" />
+		<output target="SignCommercialCarrierContractOutput" />
+	</operation>
+
+	<structure name="SignCommercialCarrierContractInput">
+		<member name="document" target="ShippingDocumentEnvelope" />
+		<!-- identifiers contain the lineItem identifiers -->
+		<member name="identifiers" target="com.amazon.ContractModelTypes#IdentifierList" />
+	</structure>
+
+
+	<structure name="SignCommercialCarrierContractOutput">
+		<member name="resultEntityIds"
+			target="com.amazon.ContractModelTypes#RelativeReferenceList" />
+		<member name="document" target="ShippingDocumentEnvelope" />
+		<member name="constraintViolations"
+			target="com.amazon.ConstraintViolationTypes#ConstraintViolationList" />
+		<!-- <error target="" /> We can send specific error codes -->
+	</structure>
+
+	<documentation target="GetNewShipmentId">
+		Creates new shipmentId
+        Prefixing the ShipmentId to make it marketPlace specific in CCT World for different Regions(IN,UK,CN)
+        Using CCTMarketPlaceId as an input which helps in Prefixing the Generated ShipmentId.
+	</documentation>
+	<operation name="GetNewShipmentId">
+		<input target="GetNewShipmentIdRequest" />
+		<output target="GetNewShipmentIdResponse" />
+		<error target="DependencyException" />
+		<error target="PSRException" />
+	</operation>
+	
+	<structure name="GetNewShipmentIdRequest">
+	    <member name="cctMarketplaceId" target="String" />
+    </structure>
+	 
+	<structure name="GetNewShipmentIdResponse">
+		<member name="shipmentId" target="String" />
+	</structure>
+
+	<documentation target="RecalculateRates" >
+		Recalculates rates for a given contractId
+		by getting eligibleServiceOfferings from TSO.
+	</documentation>
+
+    <operation name="RecalculateRates">
+        <input target="RecalculateRatesRequest" />
+        <output target="RecalculateRatesResponse" />
+        <error target="DependencyException" />
+        <error target="InvalidInputException" />
+        <error target="RetryableDependencyException" />
+    </operation>
+
+    <structure name="RecalculateRatesRequest">
+        <member name="contractId" target="String" />
+    </structure>
+    <required target="RecalculateRatesRequest$contractId" />
+    <structure name="RecalculateRatesResponse" />
+
+    <documentation target="UpdateComplianceStatus">
+        Handles the events fetched from SQS
+        queue and updates complianceStatus.
+    </documentation>
+	<operation name="UpdateComplianceStatus" >
+		<input target="UpdateComplianceStatusRequest" />
+		<output target="UpdateComplianceStatusResponse" />
+		<error target="InvalidInputException" />
+		<error target="DependencyException" />
+		<error target="PSRException" />
+	</operation>
+
+	<structure name="UpdateComplianceStatusRequest">
+		<member name="complianceEvent" target="ComplianceEvent"/>
+	</structure>
+	<structure name="UpdateComplianceStatusResponse" />
+
+	<!--documentation target="HandleShipmentUpdate">
+		An activity to handle shipment event aggregated by event code.
+		Process events and pass them down to the dowmstream like EventBus and CASE.
+	</documentation>
+	<operation name="HandleShipmentUpdate">
+		<input target="HandleShipmentUpdateRequest" />
+		<output target="HandleShipmentUpdateResponse" />
+		<error target="DependencyException" />
+		<error target="InvalidInputException" />
+	</operation>
+
+	<documentation target="HandleShipmentUpdateRequest">
+		It is the request structure for the
+		ShipmentUpdate.
+	</documentation>
+	<structure name="HandleShipmentUpdateRequest">
+		<member name="shipmentId" target="String" />
+		<member name="eventCode" target="String" />
+		<member name="events" target="PSREventList" />
+	</structure>
+	<structure name="HandleShipmentUpdateResponse" /-->
+
+</definition>

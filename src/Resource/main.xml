@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definition assembly="com.amazon.psr.model" version="1.0">
+
+    <!-- Service definition -->
+
+    <!-- The set of model definitions provided here are restricted to shipping
+        requests only. The original idea was to model it in a way that any other
+        service could also be purchased but abstracting out a coordinator definition
+        was difficult due to absence of defined use-cases. Hence, we expect to evolve
+        the purchase structure but will ensure backward compatibality -->
+
+    <documentation target="PSRService">
+        PSR provides a set of operations
+        for purchasing services provided by Amazon Logistics. It supports
+        creating a new purchase Request, retreiving existing purchases and
+        cancellation of a purchase.
+    </documentation>
+
+    <service name="PSRService">
+        <operation target="PurchaseShipping" />
+        <operation target="GetPurchase" />
+        <operation target="GetPurchases" />
+        <operation target="CancelPurchase" />
+        <operation target="GetShipmentInfo" />
+        <operation target="GetShipmentInfoByContainerIdentifier" />
+        <operation target="GetShipmentInfoV3" />
+        <operation target="UpdatePickup" />
+        <operation target="UpdateDelivery" />
+        <operation target="CancelPurchaseV3" />
+        <operation target="GetHTCDescriptions" />
+        <operation target="GetShipmentContainerInfo" />
+        <operation target="UpdateContainerStatusInfo" />
+        <operation target="SignCommercialCarrierContract" />
+        <operation target="GetBulkPurchases" />
+        <operation target="com.amazon.amzl.purchase#GetContainerInfoV3" />
+        <operation target="GetNewShipmentId" />
+        <operation target="SignContractUpdate" />
+        <operation target="AddContainer" />
+        <operation target="EvaluateCaseRequest" />
+        <operation target="RecalculateRates" />
+        <operation target="UpdateComplianceStatus" />
+        <!--operation target="HandleShipmentUpdate" /-->
+    </service>
+
+</definition>

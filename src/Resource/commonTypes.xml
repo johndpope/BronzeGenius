@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definition assembly="com.amazon.psr.model" version="1.0">
+
+
+	<!-- Primitive Types -->
+
+	<string name="ReferenceIdentifier" />
+	<string name="PurchaseId" />
+	<string name="AccountId" />
+	<string name="ShipmentId" />
+	<string name="CustomerId" />
+	<string name="String" />
+	<string name="TariffCode" />
+	<string name="CountryCode" />
+	<string name="TrackingId" />
+	<string name="ContainerId" />
+
+	<!-- TariffCode is a 10 digit Number but in future we may suggest HTC codes
+		based on first six harmonized digits. http://en.wikipedia.org/wiki/Harmonized_System#Structure -->
+	<length target="TariffCode">
+		<min value="6" />
+		<max value="10" />
+	</length>
+
+	<!-- CountryCode is a 2 character code -->
+	<length target="CountryCode">
+		<min value="2" />
+		<max value="2" />
+	</length>
+
+	<!-- possible error codes when query for htc -->
+	<string name="HTCErrorCodes" />
+	<enum target="HTCErrorCodes">
+		<enumValue value="INVALID_HTC" name="INVALID_HTC" />
+		<enumValue value="INTERNAL_FAILURE" name="INTERNAL_FAILURE" />
+	</enum>
+	<enumjava target="HTCErrorCodes">
+		<class value="com.amazon.psr.model.HTCErrorCodes" />
+	</enumjava>
+
+
+	<timestamp name="Date" />
+
+	<!-- Structures -->
+
+	<documentation target="ShipmentResponse">
+		Returns the reference ids, shipping
+		service charges and estimated delivery
+		dates. This is returned as part
+		of purchase Shipping
+	</documentation>
+	<structure name="ShipmentResponse">
+		<member name="clientReferenceId" target="ReferenceIdentifier" />
+		<member name="shipmentId" target="String" />
+		<member name="trackingIdMap"
+			target="com.amazon.transportation.tss.model#PropertiesMap" />
+		<member name="billedWeight" target="com.amazon.transportation.tss.model#Weight" />
+		<member name="shippingServiceCharge"
+			target="com.amazon.transportation.tss.model#ShippingServiceCharge" />
+		<member name="shippingServiceId" target="String" />
+		<member name="estimatedDeliveryInformation"
+			target="com.amazon.transportation.tss.model#EstimatedDeliveryInformation" />
+	</structure>
+
+	<documentation target="Shipment">
+		Wraps around TR and appends
+		creationDate, shipmentId and input channel type. This structure will
+		be deprecated in
+		favor of the structure returned by TSSCore for the
+		getShipment call.
+
+		Copied TR Structure for backward compability and to
+		change container type in
+		the structure
+		so as to retrieve the status of
+		the packages.
+	</documentation>
+	<structure name="Shipment">
+		<member name="consignor" target="com.amazon.transportation.tss.model#Party" />
+		<member name="consignee" target="com.amazon.transportation.tss.model#Party" />
+		<member name="payee" target="com.amazon.transportation.tss.model#Party" />
+		<member name="requester" target="com.amazon.transportation.tss.model#Party" />
+		<member name="requestor" target="Requestor" />
+		<member name="marketplaceId"
+			target="com.amazon.transportation.tss.model#MarketplaceID" />
+		<member name="businessType" target="com.amazon.transportation.tss.model#BusinessType" />
+		<member name="shippingPurpose"
+			target="com.amazon.transportation.tss.model#ShippingPurpose" />
+		<!-- these can be default for a particular account -->
+
+		<!-- Physical Entities present in the TR -->
+		<!-- setting our defined container which includes the status also -->
+		<member name="containers" target="ContainerList" />
+
+		<member name="clientReferenceId" target="com.amazon.transportation.tss.model#String" />
+		<member name="itemsInformation"
+			target="com.amazon.transportation.tss.model#ItemInformationForShippingList" />
+		<member name="totalValue" target="com.amazon.transportation.tss.model#Currency" />
+
+
+		<member name="shippingDocuments"
+			target="com.amazon.transportation.tss.model#ShippingDocumentsList" />
+
+		<!-- Service Request Parameters -->
+		<!-- Planning will always be done on origin and destination -->
+		<member name="originAddress" target="com.amazon.transportation.tss.model#AddressInfo" />
+		<member name="destinationAddress" target="com.amazon.transportation.tss.model#AddressInfo" />
+
+
+		<member name="pickupWindow" target="com.amazon.transportation.tss.model#TimeSlot" />
+		<member name="shipDate" target="com.amazon.transportation.tss.model#DateTime" />
+		<member name="deliveryWindow" target="com.amazon.transportation.tss.model#TimeSlot" />
+
+		<member name="shippingServiceId" target="com.amazon.transportation.tss.model#String" />
+		<!-- Additional accessories or ValueAddedServices for the shipment All
+			VAS are applicable at shipment level and cannot be applied at partial package
+			level. However to support partial reject services etc. we may choose to take
+			ValueAddedServiceProperties at each container level too. Currently we support
+			Accessories only for SinglePiece Shipments -->
+		<member name="shippingAccessoriesToPurchase"
+			target="com.amazon.transportation.tss.model#AccessoriesInformation" />
+
+		<!-- Return Details. Absence of returnAddress, would mean that return is
+			not required for this TR. -->
+		<member name="returnAddress" target="com.amazon.transportation.tss.model#AddressInfo" />
+		<!-- member name="returnShippingServiceId" target="com.amazon.transportation.tss.model#String"
+			/ -->
+
+		<member name="clientSpecificAttributes"
+			target="com.amazon.transportation.tss.model#ClientSpecificAttributes" />
+
+		<member name="creationDate" target="Date" />
+		<member name="shipmentId" target="String" />
+		<member name="purchaseId" target="PurchaseId" />
+		<member name="inputChannel" target="ChannelType" />
+		<member name="returnLegShipmentId" target="ShipmentId" />
+
+	</structure>
+
+	<documentation target="Requestor">
+		Requestor extends Party defined in
+		TSSCommons. The idea is to accept the customerId of the requestor for
+		auditing purposes within PSR.
+		Initially, the customer Id was a required
+		field but given EDI use-cases where its a software client
+		which is
+		creating a request, there is no customerId associated with the
+		request.
+	</documentation>
+	<structure name="Requestor" isa="com.amazon.transportation.tss.model#Party">
+		<member name="customerId" target="CustomerId" />
+	</structure>
+
+	<documentation target="DateRange">
+		DateRange is a range specifying the
+		start and the endTimes.
+	</documentation>
+	<structure name="DateRange">
+		<member name="startTime" target="Date" />
+		<member name="endTime" target="Date" />
+	</structure>
+
+	<documentation target="Purchase">
+		Defines all the attributes of a
+		purchase.
+	</documentation>
+	<structure name="Purchase">
+		<member name="clientPurchaseReferenceId" target="ReferenceIdentifier" />
+		<member name="purchaseId" target="PurchaseId" />
+		<member name="purchaseStatus" target="PurchaseStatus" />
+		<member name="creationDate" target="Date" />
+		<member name="createdBy" target="CustomerId" />
+		<member name="lastUpdatedDate" target="Date" />
+		<member name="lastUpdatedBy" target="CustomerId" />
+	</structure>
+
+	<documentation target="ErrorShipment">
+		A single Error Shipment specifying
+		why the shipment
+		is in the error state. The current set of Error Codes
+		are not defined as TSS doesn't specify the reason for failure. Hence,
+		for most scnearios, this might be empty.
+	</documentation>
+	<structure name="ErrorShipment">
+		<member name="clientReferenceIdentifier" target="String" />
+		<member name="errorReasonCode" target="String" />
+	</structure>
+
+	<documentation target="CancelShipmentResponse">
+		A single CancelShipment Response
+		mentioning whether the shipment is
+		cancelled and the reasonCode for
+		rejection if the cancellationFailed
+	</documentation>
+	<structure name="CancelShipmentResponse">
+		<member name="shipmentId" target="String" />
+		<member name="trackingId" target="TrackingId" />
+		<member name="containerId" target="ContainerId" />
+		<member name="isCancelled" target="com.amazon.transportation.tss.model#Boolean" />
+		<member name="rejectionReasonCode" target="String" />
+	</structure>
+
+	<documentation target="Container">
+		Container info. Currently it has
+		Container status and
+		Compliance status as extra attribute,
+		apart from inheriting attributes
+		from TSS container.
+	</documentation>
+	<structure name="Container"
+		isa="com.amazon.transportation.tss.model#Container">
+		<member name="containerStatus" target="com.amazon.transportation.spec.events#EventCodes" />
+		<member name="complianceStatus" target="String" />
+	</structure>
+
+	<documentation target="PSREvent">
+		Contains the
+		necessary metadata
+		associated from the SPEC Event and the relevant
+		fields that need to be
+		managed by PSR. The clientMarketplaceId fields signifies the
+		marketplaceId for which the event has been raised. Eg. Commercial
+		Carrier Website/ Easy Ship
+	</documentation>
+	<structure name="PSREvent">
+		<member name="client" target="String" />
+		<member name="messageId" target="String" />
+		<member name="trackingId" target="String" />
+		<member name="trId" target="String" />
+		<member name="eventCode" target="String" />
+		<member name="eventDate" target="Date" />
+		<member name="clientMarketplaceId" target="String" />
+		<member name="containerId" target="String" />
+		<!-- data field contains Shipment information provided by SPEC for deviation
+			events , for eg, WMM will have new Container attributes. It will have serialized
+			data of COMPEventDataType. -->
+		<member name="data" target="String" />
+		<member name="legType" target="com.amazon.transportation.spec.events#LegType" />
+		<member name="reverseLegTrackingId" target="String" />
+	</structure>
+	<required target="PSREvent$trackingId" />
+	<required target="PSREvent$trId" />
+	<required target="PSREvent$clientMarketplaceId" />
+
+	<documentation target="ShippingDocumentEnvelope">
+		Envelope to hold the
+		CommercialCarrier
+		Contract document.
+	</documentation>
+	<envelope name="ShippingDocumentEnvelope" />
+	<codigoorderdocument target="ShippingDocumentEnvelope" />
+
+	<documentation target="ComplianceEvent" >
+		Contains data provided by GCP
+		to update compliance status.
+		complianceStatus can be 'COMPLETED' or 'PROCESSING_ERROR'
+	</documentation>
+	<structure name="ComplianceEvent">
+		<member name="shipmentId" target="String" />
+		<member name="trackingId" target="String" />
+		<member name="complianceStatus" target="String" />
+        <member name="eventDate" target="Date" />
+        <member name="containerId" target="String" />
+		<member name="clientMarketplaceId" target="String" />
+	</structure>
+	<required target="ComplianceEvent$trackingId" />
+	<required target="ComplianceEvent$complianceStatus" />
+	<required target="ComplianceEvent$containerId" />
+
+	<!-- Lists -->
+
+	<list name="ReferenceIdentifiers">
+		<member target="ReferenceIdentifier" />
+	</list>
+
+	<list name="ShippingRequestList">
+		<member target="com.amazon.transportation.tss.model#TR" />
+	</list>
+
+	<list name="ShipmentResponseList">
+		<member target="ShipmentResponse" />
+	</list>
+
+	<list name="ShipmentList">
+		<member target="Shipment" />
+	</list>
+
+	<list name="PurchaseList">
+		<member target="Purchase" />
+	</list>
+
+	<list name="ShipmentIdList">
+		<member target="ShipmentId" />
+	</list>
+
+	<list name="CancelShipmentResponseList">
+		<member target="CancelShipmentResponse" />
+	</list>
+
+	<list name="ErrorShipmentList">
+		<member target="ErrorShipment" />
+	</list>
+
+	<list name="GetPurchaseResponseList">
+		<member target="GetPurchaseResponse" />
+	</list>
+
+	<list name="TariffCodeList">
+		<member target="TariffCode" />
+	</list>
+
+	<list name="TariffCodeDescriptionList">
+		<member target="TariffCodeDescription" />
+	</list>
+
+	<list name="TariffCodeErrorList">
+		<member target="TariffCodeError" />
+	</list>
+
+	<list name="ContainerList">
+		<member target="Container" />
+	</list>
+
+	<list name="TrackingIdList">
+		<member target="TrackingId" />
+	</list>
+
+	<!--list name="PSREventList">
+			<member target="PSREvent" />
+	</list-->
+
+</definition>
