@@ -3,7 +3,7 @@ package geom.shape;
 import geom.point.Point2D;
 
 /**
- * @author xuch.
+ * @author xuch. Hello
  *
  * TODO
  */
