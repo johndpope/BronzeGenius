@@ -1,6 +1,7 @@
 package Selenium;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.*;
@@ -22,17 +23,39 @@ public class HelloSelenium
         * */
         System.setProperty("webdriver.firefox.marionette", "/Users/xuch/Downloads/geckodriver");
         WebDriver driver = new FirefoxDriver();
-        driver.get("https://www.baidu.com");
-        driver.manage().window().maximize();
+        String target = "https://www.amazon.co.uk/Sony-PlayStation-Infinite-Warfare-Bundle/dp/B01MF987C8/ref=sr_1_2?s=videogames&ie=UTF8&qid=1480300117&sr=1-2&keywords=PS4";//"https://www.baidu.com";
+        driver.get(target);
+        //driver.manage().window().maximize();
 
+        /*
         WebElement txtBox = driver.findElement(By.name("wd"));
         txtBox.sendKeys("Selenium");
-
         WebElement button = driver.findElement(By.id("su"));
         button.click();
+        */
 
+        String contained = "in stock";
+        JavascriptExecutor executor = (JavascriptExecutor) driver;
 
-        //System.
+        while (true) {
+            try {
+                WebElement availability = driver.findElement(By.id("availability0000"));
+                String text = availability.getText();
+                if (text.contains(contained)) executor.executeScript("alert('Congratulations, you got available stocks.')");
+                break;
+            } catch (Exception e) {
+                try {
+                    executor.executeScript("alert('No available stocks, and will refresh again.')");
+                    Thread.sleep(3000);
+                    driver.switchTo().alert().accept();
+                    driver.navigate().refresh();
+                    continue;
+                } catch (InterruptedException ie) {
+                    executor.executeScript("alert('Auto scipt was interrupted by unkown reason, and no element found.')");
+                    break;
+                }
+            }
+        }
         driver.close();
     }
 

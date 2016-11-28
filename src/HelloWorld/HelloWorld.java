@@ -1,6 +1,7 @@
 package HelloWorld;
 
 import javafx.beans.binding.ObjectExpression;
+import org.junit.Assert;
 
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -9,13 +10,21 @@ import java.util.*;
 import java.text.SimpleDateFormat;
 import java.lang.Exception;
 
+import static org.mockito.Mockito.*;
+
 /**
  * Created by xuch on 4/28/16.
  */
 public class HelloWorld
 {
+    private Validator validator;
+
     public static void main(String[] args) throws Exception
     {
+        String uid1 = "40f59cc08ff156abdd386a096b9b94c381b38461";
+        String uid2 = "d5ee90a052ce373a5e612819c49cfd2cfac6a960";
+        System.out.println(uid1.length() + "," + uid2.length());
+        System.out.println(new Date().getTime());
         Date date = null;
         if (date == null) {
             //throw new FromRuntimeException("from runtime exception");
@@ -347,5 +356,10 @@ public class HelloWorld
                 URLEncoder.encode("hello", "UTF-8")
         );
         return;
+    }
+
+    public Date test() {
+        if (validator.validate(true)) return new Date();
+        else return new Date((new Date()).getTime() + 1000 * 20);
     }
 }
