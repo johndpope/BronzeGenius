@@ -5,7 +5,7 @@ package Synchronized.note;
  */
 public class Sync
 {
-    // non-synchronized method 
+    // non-synchronized method
     public void non_synchronized()
     {
         System.out.println("non synchronized method");
