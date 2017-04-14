@@ -1,15 +1,33 @@
 package HelloWorld;
 
+import com.google.gson.*;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
+import com.sun.corba.se.impl.ior.OldJIDLObjectKeyTemplate;
 import javafx.beans.binding.ObjectExpression;
+import lombok.Data;
+import org.apache.commons.exec.util.MapUtils;
+import org.apache.commons.lang3.Validate;
+import org.joda.time.JodaTimePermission;
 import org.junit.Assert;
 
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.util.*;
 import java.text.SimpleDateFormat;
 import java.lang.Exception;
+import java.util.stream.Collectors;
 
+import javafx.util.Pair;
+
+import org.joda.time.DateTime;
 import static org.mockito.Mockito.*;
 
 /**
@@ -17,10 +35,335 @@ import static org.mockito.Mockito.*;
  */
 public class HelloWorld
 {
+    private static Gson gson = new GsonBuilder().create();
+
+    @Data
+    public class TestType {
+        private Test type;
+    }
+
+    public enum Test {
+        @SerializedName(value = "HELLO", alternate = {"Hello", "hello"})
+        HELLO("haha");
+        private String key;
+        Test(String key) {
+            this.key = key;
+        }
+        public String toString() {
+            return key;
+        }
+    }
+
+    /**
+     * http://stackoverflow.com/questions/309424/read-convert-an-inputstream-to-a-string
+     * http://stackoverflow.com/questions/9856195/how-to-read-an-http-input-stream
+     * @param url
+     * @return
+     */
+    public static String getResponse(String url) {
+        try {
+            HttpURLConnection request = (HttpURLConnection) new URL(url).openConnection();
+            request.connect();
+            System.out.println(request.getContent());
+            System.out.println(request.toString());
+            JsonElement root = new JsonParser().parse(new InputStreamReader((InputStream) request.getContent()));
+            //System.out.println(root.getAsJsonObject());
+            //System.out.println(root.toString());
+            Scanner s = new Scanner(new URL(url).openStream()).useDelimiter("\\A");
+
+
+            PrintStream out = new PrintStream(new FileOutputStream("output.txt"));
+            System.setOut(out);
+            String result = s.hasNext() ? s.next() : null;
+            System.out.println(result);
+            new JsonParser().parse(result);
+            //InputStreamReader in = new InputStreamReader((InputStream) request.getContent())
+            return root.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     private Validator validator;
 
+    public static void testsHere() {
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(DateTime.class, new DateTimeTypeAdapter())
+                //.registerTypeAdapter(new TypeToken<ArrayList<String>>(){}.getType(), new FoodItemsTypeAdapter())
+                //.registerTypeAdapter(((List<String>)new ArrayList<String>()).getClass(), new FoodItemsTypeAdapter())
+                .registerTypeAdapter(new TypeToken<List<String>>(){}.getType(), new FoodItemsTypeAdapter())
+                .registerTypeAdapter(Coordinates.class, new CoordinatesAdapter())
+                //.setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
+                .create();
+
+        // {"coordinates":[43.0923923224, -123.4527009643]}
+        String json = "[{\"DescriptiON\":\"details\",\"name\":\"Sex Beach Party\",\"coordinates\":[43.0923923224, -123.4527009643],\"eventDate\":\"2017-02-25T23:31:32.243\",\"eventLocation\":{\"address\":\"CA, United States\",\"latitude\":45.76908908092343,\"longitude\":-123.98692471920307},\"foodItems\":\"Chicken: Sausage: Champagne\"},{\"DescriptiON\":\"details\",\"name\":\"Sex Beach Party\",\"coordinates\":[43.9999999999, -123.9999999999],\"eventDate\":\"2017-02-25T23:31:32.243\",\"eventLocation\":{\"address\":\"CA, United States\",\"latitude\":45.99999999999999,\"longitude\":-123.99999999999999},\"foodItems\":\"Chicken: Sausage: Champagne\"}]";
+
+        List<PartyEvent> newPartyList = gson.fromJson(json, new TypeToken<List<PartyEvent>>(){}.getType());
+        PartyEvent newParty = newPartyList.get(1);
+        System.out.println(newPartyList.get(0).getCoordinates().getLatitude() + "**" + newPartyList.get(0).getCoordinates().getLongitude());
+        System.out.println(newParty.getCoordinates().getLatitude() + "**" + newParty.getCoordinates().getLongitude());
+        System.exit(0);
+
+
+        Location eventLocation = new Location();
+        eventLocation.setAddress("CA, United States");
+        eventLocation.setLatitude(45.76908908092343);
+        eventLocation.setLongitude(-123.98692471920307);
+
+        List<String> foodItems = new ArrayList<String>();
+        foodItems.add("Chicken");
+        foodItems.add("Sausage");
+        foodItems.add("Champagne");
+
+        Coordinates coordinates = new Coordinates();
+        coordinates.setLatitude(44.0000222003);
+        coordinates.setLongitude(122.0000222003);
+        PartyEvent partyEvent = new PartyEvent();
+        partyEvent.setName("Sex Beach Party");
+        partyEvent.setDescription("details");
+        partyEvent.setEventDate(new DateTime());
+        partyEvent.setEventLocation(eventLocation);
+        partyEvent.setFoodItems(foodItems);
+        partyEvent.setCoordinates(coordinates);
+
+        System.out.println(gson.toJson(partyEvent));
+    }
+
+    public static void streamTest() {
+        Coordinates coordinates1 = new Coordinates();
+        coordinates1.setLatitude(111.00);
+        coordinates1.setLongitude(111.00);
+
+        Coordinates coordinates2 = new Coordinates();
+        coordinates2.setLatitude(222.00);
+        coordinates2.setLongitude(222.00);
+
+        PriorityQueue<Pair<Double, Coordinates>> queue = new PriorityQueue<>((Pair<Double, Coordinates> first, Pair<Double, Coordinates> second) -> first.getKey().compareTo(second.getKey()));
+        queue.add(new Pair<Double, Coordinates>(90.00, coordinates1));
+        queue.add(new Pair<Double, Coordinates>(40.00, coordinates2));
+
+        List<Coordinates> result = queue.stream().filter(each -> each.getKey().compareTo(80.00) < 1).map(each -> each.getValue()).collect(Collectors.toList());
+
+        queue.forEach(each -> System.out.println(each.getKey() + ", " + each.getValue()));
+        result.forEach(each -> System.out.println(each.getLatitude()));
+
+    }
+
+    public static void testGson() {
+        String nullStr = null;
+        String emptyStr = "";
+        TestType testType = gson.fromJson(nullStr, TestType.class);
+        TestType testType1 = gson.fromJson(emptyStr, TestType.class);
+
+        System.out.println(testType == null ? "null" : "not null");
+        System.out.println(testType1 == null ? "null" : "not null");
+    }
+
+    public static void testStatic() {
+        Location location = new Location();
+        Coordinates coordinates = Constant.getInitialCoordinates(null);
+        location.setLatitude(coordinates.getLatitude());
+        location.setLongitude(coordinates.getLongitude());
+        System.out.println(gson.toJson(location));
+    }
+
+    public static void testPriorityQueue() {
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>();
+        priorityQueue.add(5);
+        priorityQueue.add(0);
+        priorityQueue.add(58);
+        priorityQueue.add(-1);
+        priorityQueue.add(2);
+
+        Object[] list = priorityQueue.toArray();
+        for (Integer each : priorityQueue) {
+            System.out.println(each);
+        }
+
+        for (Object each : list) {
+            System.out.println((Integer)each);
+        }
+
+
+        List<Pair<Double, String>> pairList = new ArrayList<>();
+        pairList.add(new Pair<>(10.0, ""));
+        pairList.add(new Pair<>(-1.0, ""));
+        pairList.add(new Pair<>(1.0, ""));
+        pairList.add(new Pair<>(100.0, ""));
+        pairList.add(new Pair<>(100.0, ""));
+        pairList.add(new Pair<>(10.0, ""));
+
+        pairList.sort(new Comparator<Pair<Double, String>>() {
+            @Override
+            public int compare(Pair<Double, String> o1, Pair<Double, String> o2) {
+                return o1.getKey().compareTo(o2.getKey());
+            }
+        });
+
+        pairList.forEach(each -> System.out.println(each.getKey()));
+
+    }
+
+    public static void testJodaTime() {
+        DateTime now = new DateTime();
+        System.out.println(now.getMillis());
+        //now = now.plusMillis(1000);
+
+        now.plus(1000);
+        System.out.println(now.isAfter(now));
+        System.out.println(now.plus(1000).isAfter(now));
+    }
+
+    public static void testValidate() {
+        Coordinates coordinates = new Coordinates();
+        //Validate.notBlank(coordinates);
+    }
     public static void main(String[] args) throws Exception
     {
+        System.out.println(Integer.reverse(8));
+        testJodaTime();
+        System.exit(0);
+
+        //testPriorityQueue();
+        //testStatic();
+        //System.exit(0);
+        if (Integer.MAX_VALUE != (long)Integer.MAX_VALUE) System.out.println("not equal");
+        System.out.println(((long)Integer.MAX_VALUE) * 60 * 60 * 60);
+        System.out.println(Integer.MIN_VALUE);
+        System.out.println(Integer.MAX_VALUE);
+        System.out.println(Double.MIN_VALUE);
+        System.out.println(Double.MAX_VALUE);
+
+        double dMax = 2147483650d;
+        double dMin = -2147483650d;
+        System.out.println(new Double(dMax).intValue());
+        System.out.println(new Double(dMin).intValue());
+
+        double dCeil = Math.ceil(Double.MAX_VALUE);
+        System.out.println(dCeil);
+        testGson();
+
+
+        Test testEnum = Test.HELLO;
+        Test testEnumNull = null;
+        System.out.println(Status.BeforeArrivedPickup);
+        //System.out.println(testEnumNull.name());
+        System.out.println(String.valueOf(new Double(111.00)));
+        //streamTest();
+        System.exit(0);
+
+
+        String gg = "$";
+        List<String> ttt = new ArrayList<>();
+        List<String> sll = Arrays.asList("a", "b", "c");
+        sll.forEach(a->{
+            Integer length = a.length();
+            if (length == 1) ttt.add(gg.concat(a));
+        });
+        System.out.println(ttt.toString());
+        //System.out.println(MessageForma);
+
+//        System.out.println(HelloWorld.class.getResource("out").getFile());
+//        System.out.println(HelloWorld.class.getResource("test.txt").getFile());
+//        System.out.println(HelloWorld.class.getResourceAsStream("test.txt"));
+//        System.out.println(HelloWorld.class.getResourceAsStream("/HelloWorld/test.txt"));
+//        System.out.println(HelloWorld.class.getResourceAsStream("/output.txt"));
+//        System.exit(0);
+
+        testsHere();
+        System.exit(0);
+
+        String coordinatesJson = "{\"coordinates\":[43.0923923224, -123.4527009643]}";
+        JsonElement jsonElement = new JsonParser().parse(coordinatesJson);
+        JsonArray jsonArray = jsonElement.getAsJsonObject().get("coordinates").getAsJsonArray();
+
+        System.out.println();
+        System.out.println(jsonArray.toString());
+        System.exit(0);
+
+        List<String> l1 = Arrays.asList("a", "b", "c");
+        List<String> l2 = Arrays.asList("a", "b", "c");
+
+        List<Integer> l3 = Arrays.asList(0, 2, 3);
+        List<Integer> l4 = Arrays.asList(1, 2, 3);
+        Assert.assertArrayEquals(l3.toArray(), l4.toArray());
+        System.exit(0);
+
+        //{"type":"Point"}
+        // [-122.492677,37.74255]
+        System.out.println(new Gson().toJson(Arrays.asList(183.90, 243.092)));
+        System.out.println(new Gson().toJson(Test.HELLO));
+        TestType testType = new Gson().fromJson("{\"type\":\"hello\"}", TestType.class);
+        List<Double> result = new Gson().fromJson("[-122.492677,37.74255]", ArrayList.class);
+        System.out.println(result.get(0) + "***" + result.get(1));
+        System.out.println(testType.getType().name());
+        System.exit(0);
+
+
+        System.out.println(getResponse("https://data.sfgov.org/resource/6a9r-agq8.json"));
+        System.exit(0);
+
+
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(DateTime.class, new DateTimeTypeAdapter())
+                //.registerTypeAdapter(new TypeToken<ArrayList<String>>(){}.getType(), new FoodItemsTypeAdapter())
+                //.registerTypeAdapter(((List<String>)new ArrayList<String>()).getClass(), new FoodItemsTypeAdapter())
+                .registerTypeAdapter(new TypeToken<List<String>>(){}.getType(), new FoodItemsTypeAdapter())
+                //.setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
+                .create();
+        Location eventLocation = new Location();
+        eventLocation.setAddress("CA, United States");
+        eventLocation.setLatitude(45.76908908092343);
+        eventLocation.setLongitude(-123.98692471920307);
+
+        List<String> foodItems = new ArrayList<String>();
+        foodItems.add("Chicken");
+        foodItems.add("Sausage");
+        foodItems.add("Champagne");
+        PartyEvent partyEvent = new PartyEvent();
+        partyEvent.setName("Sex Beach Party");
+        partyEvent.setDescription("details");
+        partyEvent.setEventDate(new DateTime());
+        partyEvent.setEventLocation(eventLocation);
+        partyEvent.setFoodItems(foodItems);
+
+        System.out.println(gson.toJson(partyEvent));
+
+        //"foodItems":"Chicken: Sausage: Champagne"
+        //"foodItems":["Chicken","Sausage","Champagne"]
+
+        String json = "{\"DescriptiON\":\"details\",\"name\":\"Sex Beach Party\",\"eventDate\":\"2017-02-25T23:31:32.243\",\"eventLocation\":{\"address\":\"CA, United States\",\"latitude\":45.76908908092343,\"longitude\":-123.98692471920307},\"foodItems\":\"Chicken: Sausage: Champagne\"}";
+
+        PartyEvent newParty = gson.fromJson(json, PartyEvent.class);
+        System.out.println(newParty.getName() + ", " + newParty.getDescription());
+        System.out.println(newParty.getEventDate().toString());
+        System.out.println(newParty.getEventLocation().toString() );
+        System.out.println(newParty.getFoodItems().toString());
+
+
+        System.out.println(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(new Date()));
+        //System.out.println(getResponse("https://data.sfgov.org/resource/6a9r-agq8.json"));
+        Date tstDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").parse("2015-08-09T00:00:00.000");
+
+        DateTime dateTime = DateTime.parse("2015-08-09T00:00:00.000");
+        System.out.println(dateTime.toString());
+
+        dateTime = DateTime.parse("2015-08-09");
+        System.out.println(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS").format(dateTime.toDate()));
+
+        System.exit(0);
+
+        System.out.println(Test.HELLO.name());
+        System.out.println(Test.HELLO.toString());
+
+        Map<String, Map<String, String>> stringObjectMap = new HashMap<>();
+        stringObjectMap.put("haha", new HashMap<String, String>());
+        Map<String, String> stringStringMap = stringObjectMap.get("PickupDone");
+        System.out.println("Is " + ( stringStringMap == null ? "empty" : "not empty"));
+
+
         String uid1 = "40f59cc08ff156abdd386a096b9b94c381b38461";
         String uid2 = "d5ee90a052ce373a5e612819c49cfd2cfac6a960";
         System.out.println(uid1.length() + "," + uid2.length());

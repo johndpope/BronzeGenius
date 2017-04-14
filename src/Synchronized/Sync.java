@@ -1,4 +1,4 @@
-package Synchronized.note;
+package Synchronized;
 
 /**
  * Created by xuch on 2016/1/29.

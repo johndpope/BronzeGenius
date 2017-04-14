@@ -11,7 +11,7 @@ import static org.mockito.Mockito.*;
  * @author xuch.
  */
 public class HelloWorldTest {
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void happyCase() {
         Assert.assertTrue(true);
     }
