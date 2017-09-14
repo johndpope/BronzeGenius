@@ -1,5 +1,6 @@
 package HelloWorld;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.*;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
@@ -19,6 +20,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.file.FileSystemNotFoundException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.text.SimpleDateFormat;
@@ -220,8 +222,30 @@ public class HelloWorld
         Coordinates coordinates = new Coordinates();
         //Validate.notBlank(coordinates);
     }
+
+    public static void testException() {
+        try {
+            throw new StringValidationException();
+        } catch (StringValidationException e) {
+            System.out.println("Catches a StringValidationException");
+        } catch (ValidationException e) {
+            System.out.println("Catches a ValidationException");
+        }
+    }
+
     public static void main(String[] args) throws Exception
     {
+        testException();
+        System.exit(0);
+
+
+        Map<String, Integer> hm = ImmutableMap.of("a", 1).of("b", 2);
+        hm.forEach((k, v) -> System.out.println(k + ":" + v));
+
+        Map<String, Integer> hm1 = ImmutableMap.of("a", 1, "b", 2);
+        hm1.forEach((k, v) -> System.out.println(k + ":" + v));
+        System.exit(0);
+
         System.out.println(Integer.reverse(8));
         testJodaTime();
         System.exit(0);

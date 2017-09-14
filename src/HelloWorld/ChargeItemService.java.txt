@@ -1,0 +1,354 @@
+package HelloWorld;
+
+import com.amazon.agl.payment.model.*;
+import com.amazon.xbt.operatorconsole.backendservice.CostItem;
+import com.amazon.xbt.operatorconsole.backendservice.DependencyException;
+import com.amazon.xbt.operatorconsole.backendservice.chargeItem.OrderDetail;
+import com.amazon.xbt.operatorconsole.backendservice.translator.ChargeItemTranslator;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.helpers.MessageFormatter;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Slf4j
+@Singleton
+public class ChargeItemService {
+    @Inject
+    private Gson gson;
+
+    @Inject
+    private ChargeItemTranslator chargeItemTranslator;
+
+    @Inject
+    private AGLPaymentServiceClient aglPaymentServiceClient;
+
+
+    public GetOrderPropertyResponse getOrderProperty(String orderId) {
+        Validate.notBlank(orderId, "Order Id should not be blank");
+
+        GetOrderPropertyRequest request = GetOrderPropertyRequest.builder()
+                .withOrderId(orderId)
+                .build();
+        try {
+            return aglPaymentServiceClient.newGetOrderPropertyCall().call(request);
+        } catch (Exception e) {
+            log.error(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing GetOrderProperty call with orderId[{}]", orderId).getMessage(), e);
+            throw new DependencyException(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing GetOrderProperty call with orderId[{}]", orderId).getMessage(), e);
+        }
+    }
+    
+
+    public List<ChargeItem> getARChargeItemList(String orderId) {
+        Validate.notBlank(orderId, "Order Id should not be blank");
+
+        GetChargeItemRequest request = GetChargeItemRequest.builder()
+                .withQueryParam(ImmutableMap.of(ChargeItemQueryKey.ORDER_ID, orderId))
+                .build();
+
+        try {
+            GetChargeItemResponse response = aglPaymentServiceClient.newGetChargeItemCall().call(request);
+            System.out.println("GetChargeItemResponse is:" + gson.toJson(response));
+            return response != null ? response.getItemList() : null;
+        } catch (Exception e) {
+            log.error(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing GetChargeItem call with orderId[{}]", orderId).getMessage(), e);
+            throw new DependencyException(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing GetChargeItem call with orderId[{}]", orderId).getMessage(), e);
+        }
+    }
+
+    public ChargeItem getARChargeItem(String orderId, String chargeItemId) {
+        Validate.notBlank(orderId, "Order id should not be blank");
+        Validate.notBlank(chargeItemId, "ChargeItem id should not be blank");
+
+        GetChargeItemByIdRequest request = GetChargeItemByIdRequest.builder()
+                .withOrderId(orderId).withChargeId(chargeItemId)
+                .build();
+        try {
+            GetChargeItemByIdResponse response = aglPaymentServiceClient.newGetChargeItemByIdCall().call(request);
+            return response != null ? response.getItem() : null;
+        } catch (Exception e) {
+            log.error(MessageFormatter.format("Exception happened from AGLPaymentService when executing " +
+                    "GetChargeItemById call with orderId[{}] and chargeItemId[{}]", orderId, chargeItemId).getMessage(), e);
+            throw new DependencyException(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing GetChargeItemById call with orderId[{}] and chargeItemId[{}]", orderId, chargeItemId).getMessage(), e);
+        }
+    }
+
+    public void addARChargeItem(ChargeItemInput chargeItemInput) {
+        Validate.notNull(chargeItemInput, "Charge item should not be null");
+        Validate.notBlank(chargeItemInput.getOrderId(), "Order id should not be blank");
+
+        CreateChargeItemRequest request = CreateChargeItemRequest.builder()
+                .withOrderId(chargeItemInput.getOrderId())
+                .withItemList(ImmutableList.of(chargeItemInput))
+                .build();
+        try {
+            aglPaymentServiceClient.newCreateChargeItemCall().call(request);
+        } catch (Exception e) {
+            log.error(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing CreateChargeItem call with input[{}]", gson.toJson(chargeItemInput)).getMessage(), e);
+            throw new DependencyException(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing CreateChargeItem call with input[{}]", gson.toJson(chargeItemInput)).getMessage(), e);
+        }
+    }
+
+    public void updateARChargeItem(UpdateChargeItemInput updateChargeItemInput) {
+        Validate.notNull(updateChargeItemInput, "ChargeItem should not be null");
+        Validate.notBlank(updateChargeItemInput.getOrderId(), "Order Id should not be blank");
+
+        UpdateChargeItemRequest request = UpdateChargeItemRequest.builder()
+                .withOrderId(updateChargeItemInput.getOrderId())
+                .withItemList(ImmutableList.of(updateChargeItemInput))
+                .build();
+        try {
+            aglPaymentServiceClient.newUpdateChargeItemCall().call(request);
+        } catch (Exception e) {
+            log.error(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing UpdateChargeItem call with input[{}]", gson.toJson(updateChargeItemInput)).getMessage(), e);
+            throw new DependencyException(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing UpdateChargeItem call with input[{}]", gson.toJson(updateChargeItemInput)).getMessage(), e);
+        }
+    }
+
+    public void deleteARChargeItem(String orderId, String chargeItemId, String operator) {
+        Validate.notBlank(orderId, "Order id should not be blank");
+        Validate.notBlank(chargeItemId, "ChargeItem id should not be blank");
+
+        DeleteChargeItemRequest request = DeleteChargeItemRequest.builder()
+                .withOrderId(orderId)
+                .withIdList(ImmutableList.of(chargeItemId))
+                .withOperatorId(operator)
+                .build();
+        try {
+            aglPaymentServiceClient.newDeleteChargeItemCall().call(request);
+        } catch (Exception e) {
+            log.error(String.format("Exception happened from AGLPaymentService when executing DeleteChargeItem call " +
+                    "with orderId[%s], chargeItemId[%s] and operator[%s]", orderId, chargeItemId, operator), e);
+            throw new DependencyException(String.format("Exception happened from AGLPaymentService when executing " +
+                    "DeleteChargeItem call with orderId[%s], chargeItemId[%s] and operator[%s]", orderId, chargeItemId, operator), e);
+        }
+    }
+
+    public List<ChargeItem> getAPCostItemList(String orderId) {
+        Validate.notBlank(orderId, "Order Id should not be blank");
+
+        ListCostItemRequest request = ListCostItemRequest.builder().withOrderId(orderId).build();
+        try {
+            ListCostItemResponse response = aglPaymentServiceClient.newListCostItemCall().call(request);
+            return response == null ? null : response.getItemList();
+        } catch (Exception e) {
+            log.error(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing ListCostItem call with orderId[{}]", orderId).getMessage(), e);
+            throw new DependencyException(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing ListCostItem call with orderId[{}]", orderId).getMessage(), e);
+        }
+        //        */
+    }
+
+    public ChargeItem getAPCostItem(String orderId, String costItemId) {
+        Validate.notBlank(orderId, "Order id should not be blank");
+        Validate.notBlank(costItemId, "Cost Item id should not be blank");
+
+        GetCostItemRequest request = GetCostItemRequest.builder().withOrderId(orderId).withCostId(costItemId).build();
+        try {
+            GetCostItemResponse response = aglPaymentServiceClient.newGetCostItemCall().call(request);
+            return response == null ? null : response.getItem();
+        } catch (Exception e) {
+            log.error(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing GetCostItem call with orderId[{}] and costItemId[{}]", orderId, costItemId).getMessage(), e);
+            throw new DependencyException(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing ListCostItem call with orderId[{}] and costItemId[{}]", orderId, costItemId).getMessage(), e);
+        }
+    }
+
+    public void addAPCostItem(ChargeItemInput costItemInput) {
+        Validate.notNull(costItemInput, "Cost item should not be null");
+        Validate.notBlank(costItemInput.getOrderId(), "Order id should not be blank");
+
+        CreateCostItemRequest request = CreateCostItemRequest.builder()
+                .withOrderId(costItemInput.getOrderId())
+                .withItem(costItemInput)
+                .build();
+        try {
+            aglPaymentServiceClient.newCreateCostItemCall().call(request);
+        } catch (Exception e) {
+            log.error(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing CreateCostItem call with input[{}]", gson.toJson(costItemInput)).getMessage(), e);
+            throw new DependencyException(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing CreateCostItem call with input[{}]", gson.toJson(costItemInput)).getMessage(), e);
+        }
+    }
+
+    public void updateAPCostItem(UpdateChargeItemInput updateCostItemInput) {
+        Validate.notNull(updateCostItemInput, "Cost Item should not be null");
+        Validate.notBlank(updateCostItemInput.getOrderId(), "Order id should not be blank");
+        Validate.notBlank(updateCostItemInput.getChargeId(), "Cost item id should not be blank");
+
+        UpdateCostItemRequest request = UpdateCostItemRequest.builder()
+                .withOrderId(updateCostItemInput.getOrderId())
+                .withItem(updateCostItemInput)
+                .build();
+        try {
+            aglPaymentServiceClient.newUpdateCostItemCall().call(request);
+        } catch (Exception e) {
+            log.error(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing UpdateCostItem call with input[{}]", gson.toJson(updateCostItemInput)).getMessage(), e);
+            throw new DependencyException(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing UpdateCostItem call with input[{}]", gson.toJson(updateCostItemInput)).getMessage(), e);
+        }
+    }
+
+    public void deleteAPCostItem(String orderId, String costItemId) {
+        Validate.notBlank(orderId, "Order id should not be blank");
+        Validate.notBlank(costItemId, "Cost item id should not be blank");
+
+        DeleteCostItemRequest request = DeleteCostItemRequest.builder()
+                .withOrderId(orderId)
+                .withCostId(costItemId)
+                .build();
+        try {
+            aglPaymentServiceClient.newDeleteCostItemCall().call(request);
+        } catch (Exception e) {
+            log.error(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing DeleteCostItem call with orderId[{}] and costItemId[{}]", orderId, costItemId).getMessage(), e);
+            throw new DependencyException(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing DeleteCostItem call with orderId[{}] and costItemId[{}]", orderId, costItemId).getMessage(), e);
+        }
+    }
+
+
+    public void detachOrder(String orderId, String operator) {
+        Validate.notBlank(orderId, "Order Id should not be blank");
+
+        DetachOrderRequest request = DetachOrderRequest.builder()
+                .withOrderId(orderId)
+                .withModifyBy(operator)
+                .build();
+        try {
+            aglPaymentServiceClient.newDetachOrderCall().call(request);
+        } catch (Exception e) {
+            log.error(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing DetachOrder call with orderId[{}] and login[{}]", orderId, operator).getMessage(), e);
+            throw new DependencyException(MessageFormatter.format("Exception happened from AGLPaymentService when " +
+                    "executing DetachOrder call with orderId[{}] and login[{}]", orderId, operator).getMessage(), e);
+        }
+    }
+
+
+    public DebitNote getDebitNote(String orderId, String debitNoteId) {
+        Validate.notBlank(orderId, "Order Id should not be blank");
+        Validate.notBlank(debitNoteId, "DebitNote Id should not be blank");
+
+        GetDebitNoteRequest request = GetDebitNoteRequest.builder()
+                .withDebitNoteQueryMap(ImmutableMap.of(
+                        DebitNoteQueryMapKey.DEBIT_NOTE_ID, debitNoteId,
+                        DebitNoteQueryMapKey.ORDER_ID, orderId))
+                .build();
+        GetDebitNoteResponse response;
+        try {
+            response = aglPaymentServiceClient.newGetDebitNoteCall().call(request);
+        } catch (Exception e) {
+            log.error(MessageFormatter.format("Exception happened from AGLPaymentService during " +
+                    "executing GetDebitNote call by orderId[{}] and debitNoteId[{}]", orderId, debitNoteId).getMessage(), e);
+            throw new DependencyException(MessageFormatter.format("Exception happened from AGLPaymentService during " +
+                    "executing GetDebitNote call by orderId[{}] and debitNoteId[{}]", orderId, debitNoteId).getMessage(), e);
+        }
+
+        log.info(String.format("DebitNote list from orderId[%s] and debitNoteId[%s] is %s", orderId, debitNoteId, gson.toJson(response)));
+        if (response != null && CollectionUtils.isNotEmpty(response.getDebitNoteList())) {
+            return response.getDebitNoteList().get(0);
+        }
+        return null;
+    }
+
+    public boolean chargeItemEditable(GetOrderPropertyResponse orderProperty, ChargeItem chargeItem, DebitNote debitNote) {
+        return (debitNote == null || DebitNoteStatus.NOT_CONFIRMED.equalsIgnoreCase(debitNote.getStatus()) || DebitNoteStatus.DISPUTED.equalsIgnoreCase(debitNote.getStatus())) && ((orderProperty != null && orderProperty.isIsDetach()) || (chargeItem != null && ChargeTypeEnum.AD_HOC.equalsIgnoreCase(chargeItem.getChargeType())));
+    }
+
+    public boolean chargeItemDeletable(ChargeItem chargeItem, DebitNote debitNote) {
+        return (debitNote == null || DebitNoteStatus.NOT_CONFIRMED.equalsIgnoreCase(debitNote.getStatus()) || DebitNoteStatus.DISPUTED.equalsIgnoreCase(debitNote.getStatus())) && (chargeItem != null && ChargeTypeEnum.AD_HOC.equalsIgnoreCase(chargeItem.getChargeType()));
+    }
+
+    public Map<String, Float> calculateTotalAdHocAmount(List<ChargeItem> itemList) {
+        if (itemList == null)
+            return null;
+        Map<String, Float> amountMap = new HashMap<String, Float>();
+        float total = 0;
+        for (ChargeItem each : itemList) {
+            if (ChargeTypeEnum.AD_HOC.equalsIgnoreCase(each.getChargeType())) {
+                if (amountMap.containsKey(each.getChargeCurrencyCode())) {
+                    amountMap.put(each.getChargeCurrencyCode(), amountMap.get(each.getChargeCurrencyCode()) + Float.parseFloat(each.getAmount()));
+                } else {
+                    amountMap.put(each.getChargeCurrencyCode(), Float.parseFloat(each.getAmount()));
+                }
+            }
+        }
+        return amountMap;
+    }
+
+    private UpdateChargeItemInput translateToUpdateChargeItemInput(ChargeItem chargeItem) {
+        return UpdateChargeItemInput.builder().withOrderId(chargeItem.getOrderId()).withChargeId(chargeItem.getChargeId()).withTransportationMode(chargeItem.getTransportationMode()).withShipmentType(chargeItem.getShipmentType()).withChargeName(chargeItem.getChargeName()).withChargeType(chargeItem.getChargeType()).withChargeCategory(chargeItem.getChargeCategory()).withChargeCurrencyCode(chargeItem.getChargeCurrencyCode()).withUnitPrice(chargeItem.getUnitPrice()).withNum(chargeItem.getNum()).withAmount(chargeItem.getAmount()).withChargeDate(chargeItem.getChargeDate()).withRemark(chargeItem.getRemark()).withModifyBy(chargeItem.getModifyBy()).withDebitNoteId(chargeItem.getDebitNoteId()).withUnitName(chargeItem.getUnitName()).build();
+    }
+
+    private ChargeItemInput translateToChargeItemInput(ChargeItem chargeItem) {
+        return ChargeItemInput.builder().withOrderId(chargeItem.getOrderId()).withTransportationMode(chargeItem.getTransportationMode()).withShipmentType(chargeItem.getShipmentType()).withChargeName(chargeItem.getChargeName()).withChargeType(ChargeTypeEnum.AD_HOC).withChargeCategory(chargeItem.getChargeCategory()).withChargeCurrencyCode(chargeItem.getChargeCurrencyCode()).withUnitPrice(chargeItem.getUnitPrice()).withNum(chargeItem.getNum()).withAmount(chargeItem.getAmount()).withChargeDate(chargeItem.getChargeDate()).withRemark(chargeItem.getRemark()).withCreateBy(chargeItem.getCreateBy()).build();
+    }
+
+    private List<ChargeItem> buildChargeItemList() {
+        return ImmutableList.of(buildChargeItem());
+    }
+
+    private ChargeItem buildChargeItem() {
+        return ChargeItem.builder().withOrderId(ORDER_ID).withChargeId(CHARGE_ITEM_ID).withAmount("19.8000").withAuditTime(0).withChargeCategory("FIRST_LEG").withChargeCurrencyCode("CNY").withChargeDate(1497255128080L).withChargeName("Photo Fee").withChargeType("CONTRACTED").withCreateTime(1497255128080L).withDebitNoteId("DN14933477120005").withDiscountRate("100").withExRate("333").withExRateId("CNY-USD-1496275200000-2").withHaveTaxAmount("432.90").withIncludeTax(false).withModifyBy("operator").withModifyTime(1497351670965L).withNum("1.00").withRemoved(false).withShipmentType("FCL").withShipperCurrencyCode("USD").withShipperId("prepaid1").withTransportationMode("Ocean").withUnitName("BL").withUnitPrice("19.80").withRemark("A wonderful charge item").build();
+    }
+
+    private List<ChargeItem> buildCostItemList() {
+        return ImmutableList.of(buildCostItem());
+    }
+
+    private ChargeItem buildCostItem() {
+        return ChargeItem.builder().withOrderId(ORDER_ID).withChargeId(COST_ITEM_ID).withAmount("1.3000").withAuditTime(0).withChargeCategory("OTHER").withChargeCurrencyCode("CNY").withChargeDate(1497255128080L).withChargeName("File Fee").withChargeType("CONTRACTED").withCreateTime(1497255128080L).withDebitNoteId("").withDiscountRate("100").withExRate("333").withExRateId("CNY-USD-1496275200000-2").withHaveTaxAmount("432.90").withIncludeTax(false).withModifyBy("operator").withModifyTime(1497360999624L).withNum("1.00").withRemoved(false).withShipmentType("FCL").withShipperCurrencyCode("USD").withShipperId("prepaid1").withTransportationMode("AIR").withUnitName("BL").withUnitPrice("1.30").withRemark("A wonderful cost item").build();
+    }
+
+    private List<CostItem> buildCostItemConfigurationList() {
+        return new ImmutableList.Builder<CostItem>().add(CostItem.builder().withBusinessType("Ocean").withCatagory("FIRST_LEG").withCode("Photo Fee").withDefaultCurrency("USD").withDefaultName("拍照费").withLmsStringId("OpConsole_webpage_Configurations_Ocean_CostItem_Photo_Fee").withModifiedOn(1495873643594L).withStatus("InUse").build()).add(CostItem.builder().withBusinessType("Ocean").withCatagory("SECOND_LEG").withCode("Test").withDefaultCurrency("CNY").withDefaultName("测试费").withLmsStringId("OpConsole_webpage_Configurations_Ocean_CostItem_TEST2").withModifiedOn(1495873644694L).withStatus("InUse").build()).add(CostItem.builder().withBusinessType("Ocean").withCatagory("OTHER").withCode("File Fee").withDefaultCurrency("USD").withDefaultName("文件费").withLmsStringId("OpConsole_webpage_Configurations_Ocean_CostItem_FSTLEG").withModifiedOn(1495873645788L).withStatus("InUse").build()).build();
+    }
+
+    private DebitNote buildDebitNote() {
+        return DebitNote.builder().withOrderId(ORDER_ID).withStatus(DebitNoteStatus.DISPUTED).withRemoved(false).withAuditTime(0).withConfirmDate(0).withCreateBy("fooYongjia").withModifyBy("operator").withCreateTime(1493347712000L).withModifyTime(1497252751545L).withDebitDate(1491062400000L).withDebitNoteType(DebitNoteType.PRE_PAID).withShipperId("").build();
+    }
+
+    private List<String> buildCurrencyCodeList() {
+        return ImmutableList.of("CNY", "USD", "JYP", "EUR");
+    }
+
+    private OrderDetail buildOrderDetail() {
+        return OrderDetail.builder()
+                .withOrderId(ORDER_ID)
+                .withShipmentType("FCL")
+                .withBusinessType("Ocean")
+                .withIsDetached(false)
+                .withCostItemList(null)
+                .withChargeItemList(null)
+                .build();
+    }
+
+
+    private static final String ORDER_ID = "1496926985";
+    private static final String COST_ITEM_ID = "14972551280800004";
+    private static final String CHARGE_ITEM_ID = "14972551280800004";
+
+}
+

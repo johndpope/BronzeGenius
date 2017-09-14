@@ -1,7 +1,14 @@
+import Preference.PreferenceKeyFactory;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 class Mouse {
@@ -34,6 +41,28 @@ class Counter {
 	int i = 1;
 	public String toString() {
 		return Integer.toString(i);
+	}
+}
+
+enum ActorCategory {
+	CS(ActorCategoryName.CS),
+	ADMIN(ActorCategoryName.ADMIN),
+	ALL(ActorCategoryName.ALL);
+
+	private String name;
+
+	ActorCategory(String name) {
+		this.name = name;
+	}
+
+	public String toString() {
+		return name;
+	}
+
+	public static class ActorCategoryName {
+		public static final String CS = "CS";
+		public static final String ADMIN = "Admin";
+		public static final String ALL = "All";
 	}
 }
 
@@ -90,8 +119,112 @@ public class HelloWorld {
 	{
 		return code != null && !code.isEmpty() && code.matches("^[a-zA-Z0-9]*$");
 	}
+
+	public static void runtimeException() {
+		System.out.println("Throw a runtime exception");
+		throw new RuntimeException();
+	}
+
 	public static void main(String[] args) throws Throwable {
 		// TODO Auto-generated method stub
+		System.out.println(242.3522);
+		System.out.println(Float.parseFloat("1.1131095E9"));
+		System.exit(0);
+
+
+
+
+		String jsonString = "{\"item\":{\"shipmentType\":\"FCL\",\"discountRate\":\"100\",\"discountAmount\":null,\"num\":\"88\",\"chargeSection\":null,\"shipperId\":\"prepaid1\",\"transportationMode\":\"OCEAN\",\"debitStatus\":null,\"exRateId\":\"CNY_CNY_1498482700793\",\"createBy\":\"xuch\",\"removed\":false,\"orderId\":\"work02\",\"amount\":\"7744.00\",\"remark\":\"88\",\"taxRate\":null,\"exRate\":\"1\",\"chargeType\":\"AD_HOC\",\"createTime\":1498483131205,\"unitName\":null,\"includeTax\":false,\"auditBy\":null,\"auditTime\":0,\"debitNoteId\":null,\"shipperCurrencyCode\":\"CNY\",\"modifyBy\":\"xuch\",\"modifyTime\":1498483131205,\"appVersion\":null,\"chargeName\":\"RR1\",\"chargeDate\":1498482700793,\"chargeCurrencyCode\":\"CNY\",\"chargeStatus\":null,\"chargeId\":\"14984831447090001\",\"unitPrice\":\"88\",\"shipperCompanyName\":\"foo\",\"chargeCategory\":\"OTHER\",\"haveTaxAmount\":\"1376.00\",\"lspid\":null,\"lspname\":null},\"targetId\":\"14984831447090001\",\"targetCategory\":\"ARChargeItem\",\"behaviorCategory\":\"Update\"}";
+		Map<String, Object> jsonMap = new Gson().fromJson(jsonString, HashMap.class);
+		System.out.println(jsonMap.get("targetId"));
+		System.out.println(jsonMap.get("targetCategory"));
+		System.out.println(jsonMap.get("behaviorCategory"));
+		//System.out.println(jsonMap.get("item"));
+		System.out.println(jsonMap.get("hello"));
+		if (StringUtils.isNotBlank((String)jsonMap.get("hello"))) {
+			System.out.println((String)jsonMap.get("hello"));
+		} else {
+			System.out.println("isBlank");
+		}
+		System.exit(0);
+
+
+		//Map hshhf = ImmutableMap.of("hello", null);
+
+		//ImmutableMap.builder().put("world", null).build();
+
+		ImmutableList.of(null);
+		ImmutableList.builder().add(null).build();
+		Map<String, Object> mddd = new HashMap<>();
+		mddd.put("wert", null);
+		System.out.println(new Date(1498060800000L));
+		System.exit(0);
+
+
+		String mlaf = "safnkjeaj1io232urw#78	49%^$#&*$%^&*$##.ksjffk";
+		System.out.println(mlaf.lastIndexOf("#"));
+		System.out.println(mlaf.substring(mlaf.lastIndexOf("#") + 1));
+		System.out.println(mlaf.indexOf("#"));
+		System.out.println(mlaf.indexOf("#", -1));
+
+
+		Calendar calendar = Calendar.getInstance();
+		System.out.println(calendar.get(Calendar.YEAR));
+		System.out.println(calendar.get(Calendar.MONTH));
+		System.out.println(calendar.get(Calendar.DATE));
+		Date now = new Date();
+		System.out.println(now.getYear());
+		System.out.println(now.getMonth());
+		System.out.println(now.getDate());
+		Map<String, String> mmmm = new HashMap<>();
+		System.out.println(mmmm.get("key"));
+		System.out.println(mmmm.get(null));
+
+
+		System.out.println(PreferenceKeyFactory.class.getCanonicalName().toString());
+		System.out.println(PreferenceKeyFactory.class.getSimpleName().toString());
+
+
+		System.out.println(new Date(1496816894315L));
+		System.exit(0);
+
+
+		System.out.println(System.currentTimeMillis());
+		System.out.println(new Date(System.currentTimeMillis()));
+		System.out.println(new DateTime(new Date(System.currentTimeMillis()).getTime()));
+		System.exit(0);
+
+		System.out.println(new Date(1495706230980000L));
+
+		String max, min;
+		System.out.println(max = String.valueOf(new DateTime().getMillis()));
+
+		System.out.println(min = String.valueOf(new DateTime().minusMonths(1).getMillis()));
+
+		String nw = "1495706230980000";
+		System.out.println(nw + (nw.compareTo(max) == 0 ? " = " : (nw.compareTo(max) < 0) ? "<" : ">" ) + max);
+		System.out.println(nw + (nw.compareTo(min) == 0 ? " = " : (nw.compareTo(min) < 0) ? "<" : ">" ) + min);
+		String[] refes = {"http://ssss.js", "http://ssss.css", "http://ssss.jscss", "http://ssss.jscssjs", "http://ssss.cssjs", "http://ssss.jscssjs", "helloworld", "js", "css", ".", ".jshello", ".cssworld"};
+		Arrays.asList(refes).forEach(a -> System.out.println(a + ": " + a.matches(".*\\.(js|css)$")));
+		List<String> hel = Arrays.stream(ActorCategory.values()).map(ActorCategory::toString).collect(Collectors.toList());
+		hel.forEach(System.out::println);
+
+		ActorCategory actorCategory = ActorCategory.valueOf("CS");
+		ActorCategory actorCategory1 = ActorCategory.valueOf("CS");
+		ActorCategory actorCategory2 = ActorCategory.CS;
+		System.out.println(actorCategory == actorCategory1);
+		System.out.println(actorCategory == actorCategory2);
+		System.out.println(actorCategory == ActorCategory.CS);
+		System.out.println(actorCategory2 == ActorCategory.CS);
+
+		ActorCategory all = ActorCategory.valueOf("ALL");
+		System.out.println(all);
+
+		HelloWorld.runtimeException();
+		System.out.println("After runtime exception");
+		HelloWorld.prl("hello world");
+		System.exit(1);
+
 		Map<String, String> nm = null;//new HashMap<>();
 		//nm.put("1", "A");
 		Map<String, String> nm1 = new HashMap<>(nm);

@@ -1,0 +1,260 @@
+package HelloWorld;
+
+
+import com.amazon.xbt.operator.console.webapp.webapp.util.AuditTrailUtility;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.helpers.MessageFormatter;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import javax.servlet.*;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Enumeration;
+
+@Slf4j
+public class AuditTrailFilter implements Filter {
+    private static final Gson gson = new GsonBuilder().create();
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+    }
+
+    @Override
+    public void doFilter(ServletRequest iRequest, ServletResponse iResponse, FilterChain chain) throws IOException, ServletException {
+        if (!(iRequest instanceof HttpServletRequest) || !(iResponse instanceof HttpServletResponse)) {
+            throw new ServletException("AuditTrailFilter only supports HTTP requests");
+        }
+
+        HttpServletRequest request = (HttpServletRequest) iRequest;
+        log.info("AuditTraiFilter starts to work on request:{}" + request.getRequestURL());
+        if (!RequestMethod.POST.name().equalsIgnoreCase(request.getMethod())
+                && !RequestMethod.PUT.name().equalsIgnoreCase(request.getMethod())
+                && !RequestMethod.DELETE.name().equalsIgnoreCase(request.getMethod())) {
+            log.info("The HttpServletRequest method:{} is not in [PUT, POST, DELETE], and it will be ignored by AuditTrailFilter", request.getMethod());
+            chain.doFilter(iRequest, iResponse);
+            log.info("Ending AuditTrailFilter for request " + request.getRequestURL());
+            return;
+        }
+        // Add filter of CSS, JS and any other request without parameter "AUDITTRAIL" == true
+
+        try {
+            AuditTrailUtility.INSTANCE.handle(request);
+        } catch (Exception e) {
+            log.error(MessageFormatter.format("Failed to filter current request:{} with AuditTrailFilter", request.getRequestURL()).getMessage(), e);
+
+        }
+
+        System.out.println("##################################################################################################################");
+
+
+
+//        System.out.println("HTTP Request Body:" + request.getReader().lines().collect(Collectors.joining(System.lineSeparator())));
+//        System.out.println("HTTP Request Body:" + CharStreams.toString(request.getReader()));
+
+        //Scanner body = new Scanner(request.getInputStream(), "UTF-8").useDelimiter("\\A");
+        //System.out.println("HTTP Request Body:" + (body.hasNext() ? body.next() : "no input stream"));
+
+
+        //System.out.println(new Gson().toJson(request));
+        //System.out.println(hRequest.getCookies().toString());
+        System.out.println("PathTranslated:" + request.getPathTranslated());
+        System.out.println("PathInfo:" + request.getPathInfo());
+        try {
+            System.out.println("Parts:" + gson.toJson(request.getParts()));
+        } catch (Exception e) {
+            System.out.println("Could not serialize Parts");
+        }
+
+        Enumeration headerNames = request.getHeaderNames();
+        while(headerNames.hasMoreElements()) {
+            String headerName = (String)headerNames.nextElement();
+            System.out.println("Header Name:" + headerName + ", Value:" + request.getHeader(headerName));
+        }
+
+        Enumeration params = request.getParameterNames();
+        while(params.hasMoreElements()){
+            String paramName = (String)params.nextElement();
+            System.out.println("Parameter Name:"+paramName+", Value:"+ request.getParameter(paramName));
+        }
+
+        Enumeration attributeNames = request.getAttributeNames();
+        while(attributeNames.hasMoreElements()){
+            String attributeName = (String)attributeNames.nextElement();
+            System.out.println("Attribute Name:"+attributeNames +", Value:" + request.getAttribute(attributeName));
+        }
+
+        Cookie[] cookies = request.getCookies();
+        for (Cookie cookie : cookies) {
+            System.out.println("Cookie Name:" + cookie.getName() + ", Cookie Value:" + cookie.getValue());
+        }
+        /**
+         * 直接URL访问
+         * RequestURI:/test
+         * RequestURL:https://f45c89ae9213.ant.amazon.com:8443/test?key=123456
+         * ServletPath:/test
+         * QueryString:key=123456
+         * Parameter Name:key, Value:123456
+         * ContentLength: -1
+         * ContentLengthLong: -1
+         * Method:GET
+         * HTTP Request Body: null
+         *
+         * 表格提交:form action="/edit" method="POST"
+         * RequestURI:/edit
+         * RequestURL:https://f45c89ae9213.ant.amazon.com:8443/edit
+         * ServletPath:/edit
+         * QueryString:null
+         * Parameter Name:first, Value:Hello
+         * Parameter Name:second, Value:World
+         * ContentLength: 24   //first=Hello&second=World
+         * ContentLengthLong: 24
+         * Method:POST
+         * HTTP Request Body: null
+         *
+         * ajax: onsubmit="save()" action未设置, 执行onsubmit里的POST ajax如下:
+         * RequestURI:/save
+         * RequestURL:https://f45c89ae9213.ant.amazon.com:8443/save
+         * ServletPath:/save
+         * QueryString:null
+         * Parameter Name:path, Value:/path/to/edit
+         * Parameter Name:editAction, Value:PUT
+         * ContentLength: 39
+         * ContentLengthLong: 39
+         * Method:POST
+         * HTTP Request Body: null
+         *
+         * onsubmit之后,执行默认action(即action="本页面"),method默认为GET
+         * RequestURI:/test
+         * RequestURL:https://f45c89ae9213.ant.amazon.com:8443/test
+         * ServletPath:/test
+         * QueryString:first=China&second=Beijing
+         * Parameter Name:first, Value:China
+         * Parameter Name:second, Value:Beijing
+         * ContentLength: -1
+         * ContentLengthLong: -1
+         * Method:GET
+         * HTTP Request Body: null
+         *
+         *
+         * ajax请求只传输请求里的data给url
+         * 一个form在submit是触发一个ajax请求,那么表单的数据不会传给ajax,当ajax请求完成后,表单的数据会传给表单定义的action属性,如果没有定义action,就默认为表单所在的页面本身
+         * 例如:
+         * <form onsubmit="edit()">
+             Country: <input type="text" name="first"><br>
+             City: <input type="text" name="second"><br>
+             <input type="submit" value="Submit">
+           </form>
+         * 表单的执行,先执行onsubmit,如果返回true,则执行action(默认为自身),如果onsubmit返回为false则不执行action。
+         * 执行action的时候,默认method为GET,而且表单数据会放在http request body里面,
+         * 例如, https://f45c89ae9213.ant.amazon.com:8443/test?first=China&second=Beijing
+         * 就是表单执行完onsubmit之后执行默认action的http request
+         *
+         *
+         *
+         * 综上所述,form提交的action如果为GET,会把所有form的data放在http request的query string里面,
+         * 形如https://f45c89ae9213.ant.amazon.com:8443/edit?first=China&second=Beijing
+         * 如果action的method为POST,那么http request会比较干净,不会有body和query String。
+         * 同样也适用于ajax,ajax的method为GET,会把data全部放在http request里,如果为POST,则不会。
+         * 无论是action还是ajax,无论是GET还是POST,都会将data放在parameters里。
+         * contentLength表示request body的长度
+         *
+         *
+         * HEAD - No defined body semantics.
+         * GET - No defined body semantics.
+         * PUT - Body supported.
+         * POST - Body supported.
+         * DELETE - No defined body semantics.
+         * TRACE - Body not supported.
+         * OPTIONS - Body supported but no semantics (maybe in the future).
+         *
+         */
+
+        System.out.println("CharacterEncoding:" + request.getCharacterEncoding());
+        System.out.println("Protocol:" + request.getProtocol());
+        System.out.println("ContentLength:" + request.getContentLength());
+        System.out.println("ContentLengthLong:" + request.getContentLengthLong());
+        System.out.println("ContentType:" + request.getContentType());
+        System.out.println("AuthType:" + request.getAuthType());
+        System.out.println("ContextPath:" + request.getContextPath());
+        System.out.println("QueryString:" + request.getQueryString());
+        System.out.println("RequestURI:" + request.getRequestURI());
+        System.out.println("RequestURL:" + request.getRequestURL());
+        System.out.println("RemoteUser:" + gson.toJson(request.getRemoteUser()));
+        System.out.println("ServletContext:" + request.getServletContext());
+        System.out.println("ServletPath:" + request.getServletPath());
+        System.out.println("Method:" + request.getMethod());
+        System.out.println("RequestedSessionId:" + request.getRequestedSessionId());
+//        System.out.println("HTTP Request Body:" + request.getReader().lines().collect(Collectors.joining(System.lineSeparator())));
+//        System.out.println("HTTP Request Body:" + CharStreams.toString(request.getReader()));
+
+        //Scanner s = new Scanner(request.getInputStream(), "UTF-8").useDelimiter("\\A");
+        //System.out.println("HTTP Request Body:" + (s.hasNext() ? s.next() : "no input stream"));
+
+        System.out.println("--------------------------------------------------------");
+
+        try {
+            //System.out.println("Session:" + gson.toJson(hRequest.getSession()));
+        } catch (Exception e) {
+            System.out.println("Could not serialize Session");
+        }
+
+        try {
+            //System.out.println("UserPrincipal:" + gson.toJson(hRequest.getUserPrincipal()));
+        } catch (Exception e) {
+            System.out.println("Could not serialize UserPrincipal");
+        }
+
+        try {
+            System.out.println("AsyncContext:" + gson.toJson(request.getAsyncContext()));
+        } catch (Exception e) {
+            System.out.println("Could not serialize AsyncContext");
+        }
+
+        System.out.println("*********************************************************");
+
+        chain.doFilter(request, iResponse);
+        log.info("Ending AuditTrailFilter for request " + request.getRequestURL());
+    }
+
+
+        ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(httpServletRequest);
+        ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(httpServletResponse);
+
+        filterChain.doFilter(requestWrapper, responseWrapper);
+
+        String requestUrl = requestWrapper.getRequestURL().toString();
+        HttpHeaders requestHeaders = new HttpHeaders();
+        Enumeration headerNames = requestWrapper.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = (String) headerNames.nextElement();
+            requestHeaders.add(headerName, requestWrapper.getHeader(headerName));
+        }
+        HttpMethod httpMethod = HttpMethod.valueOf(requestWrapper.getMethod());
+        Map<String, String[]> requestParams = requestWrapper.getParameterMap();
+
+        String requestBody = IOUtils.toString(requestWrapper.getInputStream(),UTF_8);
+        JsonNode requestJson = objectMapper.readTree(requestBody);
+
+        RequestEntity<JsonNode> requestEntity = new RequestEntity<>(requestJson,requestHeaders, httpMethod, URI.create(requestUrl));
+        LOGGER.info(appendFields(requestEntity),"Logging Http Request");
+
+
+        HttpStatus responseStatus = HttpStatus.valueOf(responseWrapper.getStatusCode());
+        HttpHeaders responseHeaders = new HttpHeaders();
+        for (String headerName : responseWrapper.getHeaderNames()) {
+            responseHeaders.add(headerName, responseWrapper.getHeader(headerName));
+        }
+        String responseBody = IOUtils.toString(responseWrapper.getContentInputStream(), UTF_8);
+        JsonNode responseJson = objectMapper.readTree(responseBody);
+        ResponseEntity<JsonNode> responseEntity = new ResponseEntity<>(responseJson,responseHeaders,responseStatus);
+        LOGGER.info(appendFields(responseEntity),"Logging Http Response");
+        responseWrapper.copyBodyToResponse();
+
+    @Override
+    public void destroy() {
+    }
+}
